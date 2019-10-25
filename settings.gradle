@@ -1,0 +1,2 @@
+include ':location', ':LocationDemo'
+rootProject.name='Location Feature'
