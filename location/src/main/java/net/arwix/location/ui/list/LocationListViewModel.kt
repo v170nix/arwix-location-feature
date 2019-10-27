@@ -19,19 +19,19 @@ import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.mvi.SimpleIntentViewModel
 import org.threeten.bp.ZoneId
 
-class LocationMainViewModel(
+class LocationListViewModel(
     private val database: LocationZoneIdDatabase,
     private val dao: LocationDao,
     private val editRepository: LocationCreateEditRepository,
     private val geocoderRepository: GeocoderRepository
-) : SimpleIntentViewModel<LocationMainAction, LocationMainResult, LocationMainState>() {
+) : SimpleIntentViewModel<LocationListAction, LocationListResult, LocationListState>() {
 
-    override var internalViewState: LocationMainState = LocationMainState()
+    override var internalViewState: LocationListState = LocationListState()
     val listItems = dao.getAll()
     private val updateLocationJobs = mutableListOf<Job>()
 
     init {
-        Log.e("init", "LocationMainViewModel")
+        Log.e("init", "LocationListViewModel")
         viewModelScope.launch {
             val dbItem = database.getLZData() ?: return@launch
 
@@ -42,7 +42,7 @@ class LocationMainViewModel(
             )
             yield()
             notificationFromObserver(
-                LocationMainResult.Select(
+                LocationListResult.Select(
                     innerData, (dbItem is LocationZoneId.Auto)
                 )
             )
@@ -61,7 +61,7 @@ class LocationMainViewModel(
     private suspend fun getLocation(
         applicationContext: Context,
         flagUpdate: Boolean = false,
-        scope: LiveDataScope<LocationMainResult>
+        scope: LiveDataScope<LocationListResult>
     ) {
         val job = viewModelScope.launch(Dispatchers.Main, CoroutineStart.LAZY) {
             val location = runCatching {
@@ -74,8 +74,8 @@ class LocationMainViewModel(
             if (location != null) {
                 val zoneId = ZoneId.systemDefault()
                 scope.emit(
-                    LocationMainResult.AutoLocation(
-                        LocationMainResult.LocationMainAutoResult.Success(
+                    LocationListResult.AutoLocation(
+                        LocationListResult.LocationMainAutoResult.Success(
                             location,
                             zoneId
                         )
@@ -87,8 +87,8 @@ class LocationMainViewModel(
                     }
                 }.getOrNull() ?: run {
                     if (flagUpdate) scope.emit(
-                        LocationMainResult.AutoLocation(
-                            LocationMainResult.LocationMainAutoResult.UpdateEnd(
+                        LocationListResult.AutoLocation(
+                            LocationListResult.LocationMainAutoResult.UpdateEnd(
                                 null
                             )
                         )
@@ -96,16 +96,16 @@ class LocationMainViewModel(
                     return@launch
                 }
                 val result = if (flagUpdate) {
-                    LocationMainResult.AutoLocation(
-                        LocationMainResult.LocationMainAutoResult.UpdateEnd(
+                    LocationListResult.AutoLocation(
+                        LocationListResult.LocationMainAutoResult.UpdateEnd(
                             location,
                             zoneId,
                             address
                         )
                     )
                 } else {
-                    LocationMainResult.AutoLocation(
-                        LocationMainResult.LocationMainAutoResult.Success(
+                    LocationListResult.AutoLocation(
+                        LocationListResult.LocationMainAutoResult.Success(
                             location,
                             zoneId,
                             address
@@ -116,8 +116,8 @@ class LocationMainViewModel(
 
             } else {
                 scope.emit(
-                    LocationMainResult.AutoLocation(
-                        LocationMainResult.LocationMainAutoResult.None(
+                    LocationListResult.AutoLocation(
+                        LocationListResult.LocationMainAutoResult.None(
                             LocationPermissionHelper.check(applicationContext)
                         )
                     )
@@ -158,59 +158,59 @@ class LocationMainViewModel(
         return false
     }
 
-    override fun dispatchAction(action: LocationMainAction): LiveData<LocationMainResult> {
+    override fun dispatchAction(action: LocationListAction): LiveData<LocationListResult> {
         return liveData {
             when (action) {
-                is LocationMainAction.UpdateAutoLocation -> {
+                is LocationListAction.UpdateAutoLocation -> {
                     val activity = action.refActivity.get() ?: return@liveData
-                    emit(LocationMainResult.AutoLocation(LocationMainResult.LocationMainAutoResult.UpdateBegin))
+                    emit(LocationListResult.AutoLocation(LocationListResult.LocationMainAutoResult.UpdateBegin))
                     getLocation(activity.applicationContext, true, this)
                 }
-                LocationMainAction.CancelUpdateAutoLocation -> {
+                LocationListAction.CancelUpdateAutoLocation -> {
                     updateJobsCancel()
                     emit(
-                        LocationMainResult.AutoLocation(
-                            LocationMainResult.LocationMainAutoResult.UpdateEnd(
+                        LocationListResult.AutoLocation(
+                            LocationListResult.LocationMainAutoResult.UpdateEnd(
                                 null
                             )
                         )
                     )
                 }
-                is LocationMainAction.GetLocation -> {
+                is LocationListAction.GetLocation -> {
                     val activity = action.refActivity.get() ?: return@liveData
                     getLocation(activity.applicationContext, false, this)
                 }
-                is LocationMainAction.CheckPermission -> {
+                is LocationListAction.CheckPermission -> {
                     val activity = action.refActivity.get() ?: return@liveData
                     val isAllow = LocationPermissionHelper.check(activity)
                     if (!isAllow) {
                         emit(
-                            LocationMainResult
+                            LocationListResult
                                 .PermissionDenied((LocationPermissionHelper.isRationale(activity)))
                         )
                         return@liveData
                     }
-                    emit(LocationMainResult.PermissionGranted)
+                    emit(LocationListResult.PermissionGranted)
                 }
 
-                is LocationMainAction.SelectFormAuto -> {
-                    emit(LocationMainResult.Select(action.data, true))
+                is LocationListAction.SelectFormAuto -> {
+                    emit(LocationListResult.Select(action.data, true))
                 }
-                is LocationMainAction.SelectFromList -> {
-                    emit(LocationMainResult.Select(action.data, false))
+                is LocationListAction.SelectFromList -> {
+                    emit(LocationListResult.Select(action.data, false))
                 }
-                is LocationMainAction.Delete -> {
+                is LocationListAction.Delete -> {
                     action.item.id?.let {
                         dao.deleteById(it)
                         if (internalViewState.selectedItem?.data?.id == it) {
-                            emit(LocationMainResult.Deselect)
+                            emit(LocationListResult.Deselect)
                         }
                     }
                 }
-                is LocationMainAction.Edit -> {
+                is LocationListAction.Edit -> {
                     editRepository.edit(action.item)
                 }
-                LocationMainAction.Add -> {
+                LocationListAction.Add -> {
                     withContext(Dispatchers.Main) {
                         editRepository.create()
                     }
@@ -219,41 +219,41 @@ class LocationMainViewModel(
         }
     }
 
-    override fun reduce(result: LocationMainResult): LocationMainState {
+    override fun reduce(result: LocationListResult): LocationListState {
         return when (result) {
-            is LocationMainResult.Select -> internalViewState.copy(
-                selectedItem = LocationMainState.SelectedItem(result.item, result.isAuto)
+            is LocationListResult.Select -> internalViewState.copy(
+                selectedItem = LocationListState.SelectedItem(result.item, result.isAuto)
             )
-            is LocationMainResult.Deselect -> internalViewState.copy(
+            is LocationListResult.Deselect -> internalViewState.copy(
                 selectedItem = null
             )
-            is LocationMainResult.PermissionGranted -> internalViewState.copy(
-                autoLocationPermission = LocationMainState.LocationPermission.Allow
+            is LocationListResult.PermissionGranted -> internalViewState.copy(
+                autoLocationPermission = LocationListState.LocationPermission.Allow
             )
-            is LocationMainResult.PermissionDenied -> internalViewState.copy(
+            is LocationListResult.PermissionDenied -> internalViewState.copy(
                 autoLocationPermission = if (result.shouldRationale)
-                    LocationMainState.LocationPermission.DeniedRationale
+                    LocationListState.LocationPermission.DeniedRationale
                 else
-                    LocationMainState.LocationPermission.Denied
+                    LocationListState.LocationPermission.Denied
             )
-            is LocationMainResult.AutoLocation -> {
+            is LocationListResult.AutoLocation -> {
                 when (result.locationResult) {
-                    is LocationMainResult.LocationMainAutoResult.None -> internalViewState.copy(
+                    is LocationListResult.LocationMainAutoResult.None -> internalViewState.copy(
                         autoLocationPermission = if (result.locationResult.isPermissionAllow)
-                            LocationMainState.LocationPermission.Allow else
-                            LocationMainState.LocationPermission.Denied,
+                            LocationListState.LocationPermission.Allow else
+                            LocationListState.LocationPermission.Denied,
                         autoLocationTimeZoneData = null
                     )
-                    is LocationMainResult.LocationMainAutoResult.UpdateBegin -> internalViewState.copy(
+                    is LocationListResult.LocationMainAutoResult.UpdateBegin -> internalViewState.copy(
                         isAutoLocationUpdate = true
                     )
-                    is LocationMainResult.LocationMainAutoResult.UpdateEnd -> internalViewState.copy(
+                    is LocationListResult.LocationMainAutoResult.UpdateEnd -> internalViewState.copy(
                         isAutoLocationUpdate = false,
                         autoLocationTimeZoneData = result.locationResult.location
                             ?: internalViewState.autoLocationTimeZoneData
                     )
-                    is LocationMainResult.LocationMainAutoResult.Success -> internalViewState.copy(
-                        autoLocationPermission = LocationMainState.LocationPermission.Allow,
+                    is LocationListResult.LocationMainAutoResult.Success -> internalViewState.copy(
+                        autoLocationPermission = LocationListState.LocationPermission.Allow,
                         autoLocationTimeZoneData = result.locationResult.location
                     )
                 }

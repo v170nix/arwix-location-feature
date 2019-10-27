@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/location_main_item_auto_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/window_margin"
+    android:layout_marginTop="@dimen/mtrl_card_spacing"
+    android:layout_marginRight="@dimen/window_margin">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/location_main_item_auto_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="@dimen/window_margin"
+        android:paddingTop="@dimen/window_margin"
+        android:paddingEnd="@dimen/window_margin"
+        android:paddingBottom="@dimen/mtrl_card_spacing">
+
+        <TextView
+            android:id="@+id/location_main_auto_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/location_time_zone_header_auto"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Overline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/location_permission_denied_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/location_permission_info"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            app:firstBaselineToTopHeight="26dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/location_main_auto_header" />
+
+        <Button
+            android:id="@+id/location_permission_rationale_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/location_permission_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/location_permission_denied_info" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/location_main_item_auto_none_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/location_main_auto_header">
+
+            <Button
+                android:id="@+id/location_main_item_auto_success_update_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="get location"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/location_main_item_auto_success_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/location_main_auto_header">
+
+            <TextView
+                android:id="@+id/location_main_item_auto_name_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                app:firstBaselineToTopHeight="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Moscow" />
+
+            <TextView
+                android:id="@+id/location_main_item_auto_sub_name_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                app:firstBaselineToTopHeight="14dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/location_main_item_auto_name_text"
+                tools:text="Center region" />
+
+            <TextView
+                android:id="@+id/location_main_item_auto_latitude_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:firstBaselineToTopHeight="14dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/location_main_item_auto_sub_name_text"
+                tools:text="00 00 00.0" />
+
+            <TextView
+                android:id="@+id/location_main_item_auto_longitude_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:firstBaselineToTopHeight="14dp"
+                app:layout_constraintStart_toEndOf="@+id/location_main_item_auto_latitude_text"
+                app:layout_constraintTop_toBottomOf="@id/location_main_item_auto_sub_name_text"
+                tools:text="00 00 00.0" />
+
+            <TextView
+                android:id="@+id/location_main_item_auto_time_zone_first"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:visibility="gone"
+                app:firstBaselineToTopHeight="14dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/location_main_item_auto_latitude_text"
+                tools:text="Moscow" />
+
+            <TextView
+                android:id="@+id/location_main_item_auto_time_zone_second"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:firstBaselineToTopHeight="14dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/location_main_item_auto_time_zone_first"
+                tools:text="Standard time" />
+
+            <TextView
+                android:id="@+id/location_main_item_auto_time_zone_three"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                app:firstBaselineToTopHeight="14dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/location_main_item_auto_time_zone_second"
+                tools:text="GMT +03:00" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/location_main_item_auto_update_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Update"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/location_main_item_auto_time_zone_three" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

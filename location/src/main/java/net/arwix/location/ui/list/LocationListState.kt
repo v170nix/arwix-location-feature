@@ -2,7 +2,7 @@ package net.arwix.location.ui.list
 
 import net.arwix.location.data.room.LocationTimeZoneData
 
-data class LocationMainState(
+data class LocationListState(
     val isAutoLocationUpdate: Boolean = false,
     val autoLocationTimeZoneData: LocationTimeZoneData? = null,
     val autoLocationPermission: LocationPermission = LocationPermission.DeniedRationale,

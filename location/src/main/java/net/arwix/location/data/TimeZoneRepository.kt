@@ -68,7 +68,6 @@ class TimeZoneRepository(private val applicationContext: Context) {
             append(zoneId.rules.getOffset(instant).id.takeIf { it != "Z" } ?: "+00:00")
         }
 
-        @Suppress("MemberVisibilityCanBePrivate")
         fun getName(zoneId: ZoneId): String {
             val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 getName(TimeZoneNames.getInstance(Locale.getDefault()), zoneId)
