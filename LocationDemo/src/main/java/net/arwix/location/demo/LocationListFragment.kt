@@ -44,6 +44,16 @@ class LocationListFragment : Fragment() {
             adapter = this@LocationListFragment.resultSetup.adapter
         }
         lifecycle.addObserver(locationListFeature)
+        location_add_button.setOnClickListener {
+            locationListFeature.doAddLocation()
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(
+                    R.id.fragment_container,
+                    LocationPositionFragment::class.java, null
+                )
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

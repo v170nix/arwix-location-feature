@@ -8,22 +8,13 @@ class LocationMainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location_main)
+        supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.fragment_container,
+                LocationListFragment::class.java, null
+            )
+            .commit()
 
-        LocationListFragment()
-
-        supportFragmentManager.apply {
-            val listFragment = this.findFragmentByTag("LocationListFragment")
-            if (listFragment == null) {
-                this.beginTransaction()
-                    .add(R.id.fragment_container, LocationListFragment(), "LocationListFragment")
-                    .commit()
-            } else {
-                if (listFragment.isDetached) this.beginTransaction().replace(
-                    R.id.fragment_container,
-                    listFragment
-                ).commit()
-            }
-        }
 
     }
 }
