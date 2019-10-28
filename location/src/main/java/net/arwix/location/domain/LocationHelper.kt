@@ -39,4 +39,9 @@ object LocationHelper {
         }
     }
 
+    suspend fun getLocation(context: Context, flagUpdate: Boolean) = runCatching {
+        if (flagUpdate) updateOneAndGetLastLocation(context)
+        else getLastLocation(context)
+    }.getOrNull()
+
 }

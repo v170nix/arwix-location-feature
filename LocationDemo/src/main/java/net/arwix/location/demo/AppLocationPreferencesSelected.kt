@@ -6,12 +6,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.arwix.location.LocationZoneId
-import net.arwix.location.LocationZoneIdDatabase
+import net.arwix.location.LocationZoneIdSelectedDatabase
+import net.arwix.location.data.LocationZoneId
 import org.threeten.bp.ZoneId
 
-class AppLocationPreferences(private val sharedPreferences: SharedPreferences) :
-    LocationZoneIdDatabase {
+class AppLocationPreferencesSelected(private val sharedPreferences: SharedPreferences) :
+    LocationZoneIdSelectedDatabase {
 
     private val channel = ConflatedBroadcastChannel<LocationZoneId>()
 

@@ -1,7 +1,5 @@
 package net.arwix.location.export
 
-import android.app.Activity
-import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
@@ -16,7 +14,6 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import net.arwix.extension.runWeak
 import net.arwix.extension.weak
-import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.domain.LocationSettingHelper
 import net.arwix.location.ui.list.LocationListAction
@@ -61,16 +58,14 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
                     weakFragment.runWeak {
                         if (!LocationSettingHelper.check(this)) {
                             if (this.isRemoving || this.isDetached) return@launch
-                            model.nonCancelableIntent(
-                                LocationListAction.UpdateAutoLocation(requireActivity().weak())
-                            )
+                            model.nonCancelableIntent(LocationListAction.UpdateAutoLocation)
                         }
                     }
                 }
             },
             onSelectedListener = { item, isAuto ->
                 if (isAuto) model.intent(LocationListAction.SelectFormAuto(item))
-                else model.intent(LocationListAction.SelectFromList(item))
+                else model.intent(LocationListAction.SelectFromCustomList(item))
             },
             onEditListener = {
                 model.nonCancelableIntent(LocationListAction.Edit(it))
@@ -90,7 +85,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
             config.locationMainFactory
         ).get(LocationListViewModel::class.java)
         model.liveState.observe(config.lifecycleOwner, this::render)
-        model.listItems.observe(config.lifecycleOwner, this::setData)
+//        model.listItems.observe(config.lifecycleOwner, this::setData)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
@@ -99,21 +94,16 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         cancel()
     }
 
-    fun doActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
+    fun doActivityResult(requestCode: Int, resultCode: Int) {
         if (LocationSettingHelper.onActivityResult(requestCode, resultCode)) {
-            model.nonCancelableIntent(LocationListAction.UpdateAutoLocation(activity.weak()))
+            model.nonCancelableIntent(LocationListAction.UpdateAutoLocation)
         }
     }
 
-    fun doRequestPermissionsResult(activity: Activity, requestCode: Int, grantResults: IntArray) {
+    fun doRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
         if (LocationPermissionHelper.onRequestPermissionsResult(requestCode, grantResults)) {
-            model.nonCancelableIntent(LocationListAction.GetLocation(activity.weak()))
+            model.nonCancelableIntent(LocationListAction.GetLocation)
         }
-    }
-
-    private fun setData(list: List<LocationTimeZoneData>?) {
-        list ?: return
-        adapter.setData(list)
     }
 
 
@@ -129,6 +119,9 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
             LocationListState.LocationPermission.Allow -> adapter.setAutoState(
                 LocationListAdapter.AutoState.Allow(state.autoLocationTimeZoneData)
             )
+        }
+        if (state.customList != null) {
+            adapter.setData(state.customList)
         }
         if (state.selectedItem != null) {
             adapter.select(state.selectedItem.data, state.selectedItem.isAuto)

@@ -16,6 +16,10 @@ class GeocoderRepository(context: Context) {
     @Throws(IOException::class)
     fun getAddress(latitude: Double, longitude: Double): Address? =
         geocoder?.getFromLocation(latitude, longitude, 1)?.getOrNull(0)
+
+    fun getAddressOrNull(latitude: Double, longitude: Double): Address? =
+        runCatching { getAddress(latitude, longitude) }.getOrNull()
+
 }
 
 fun Address.getTitle(): String {

@@ -48,7 +48,7 @@ class LocationListFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        locationListFeature.doActivityResult(requireActivity(), requestCode, resultCode, data)
+        locationListFeature.doActivityResult(requestCode, resultCode)
     }
 
 
@@ -57,6 +57,6 @@ class LocationListFragment : Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        locationListFeature.doRequestPermissionsResult(requireActivity(), requestCode, grantResults)
+        locationListFeature.doRequestPermissionsResult(requestCode, grantResults)
     }
 }

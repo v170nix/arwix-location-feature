@@ -1,4 +1,4 @@
-package net.arwix.location
+package net.arwix.location.data
 
 import org.threeten.bp.ZoneId
 
