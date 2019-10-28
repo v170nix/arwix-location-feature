@@ -33,7 +33,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val timeZoneInstant: Instant = Instant.now()
     )
 
-    data class ResultSetup(
+    data class Result(
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>,
         val flowSubmitAvailable: Flow<Boolean>
     )
@@ -43,7 +43,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
     private lateinit var adapter: LocationListAdapter
     private var broadcastSubmitChannel: BroadcastChannel<Boolean> = ConflatedBroadcastChannel()
 
-    fun setup(config: Config, fragment: Fragment): ResultSetup {
+    fun setup(config: Config, fragment: Fragment): Result {
         this.config = config
         val weakFragment = fragment.weak()
         this.adapter = LocationListAdapter(
@@ -75,7 +75,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
                 model.nonCancelableIntent(LocationListAction.DeleteItem(it))
             }
         )
-        return ResultSetup(adapter, broadcastSubmitChannel.openSubscription().consumeAsFlow())
+        return Result(adapter, broadcastSubmitChannel.openSubscription().consumeAsFlow())
     }
 
 
@@ -86,13 +86,16 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
             config.locationMainFactory
         ).get(LocationListViewModel::class.java)
         model.liveState.observe(config.lifecycleOwner, this::render)
-//        model.listItems.observe(config.lifecycleOwner, this::setData)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
         broadcastSubmitChannel.cancel()
         cancel()
+    }
+
+    fun doAddLocation() {
+        model.nonCancelableIntent(LocationListAction.AddItem)
     }
 
     fun doActivityResult(requestCode: Int, resultCode: Int) {

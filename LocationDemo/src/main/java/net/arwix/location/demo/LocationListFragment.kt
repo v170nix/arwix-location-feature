@@ -15,12 +15,12 @@ import net.arwix.location.export.LocationListFeature
 class LocationListFragment : Fragment() {
 
     private lateinit var locationListFeature: LocationListFeature
-    private lateinit var resultSetup: LocationListFeature.ResultSetup
+    private lateinit var result: LocationListFeature.Result
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         locationListFeature = LocationListFeature()
-        resultSetup = locationListFeature.setup(
+        result = locationListFeature.setup(
             LocationListFeature.Config(
                 modelStoreOwner = this,
                 lifecycleOwner = this,
@@ -41,7 +41,7 @@ class LocationListFragment : Fragment() {
         with(location_main_list) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            adapter = this@LocationListFragment.resultSetup.adapter
+            adapter = this@LocationListFragment.result.adapter
         }
         lifecycle.addObserver(locationListFeature)
         location_add_button.setOnClickListener {

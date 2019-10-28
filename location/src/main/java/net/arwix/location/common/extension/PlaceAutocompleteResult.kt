@@ -28,19 +28,25 @@ fun Fragment.startPlace(
         Place.Field.ID,
         Place.Field.NAME,
         Place.Field.LAT_LNG
-    )
+    ),
+    requestCode: Int = AUTOCOMPLETE_REQUEST_CODE
 ) {
     val intent =
         Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(requireContext())
     startActivityForResult(
         intent,
-        AUTOCOMPLETE_REQUEST_CODE
+        requestCode
     )
 }
 
-fun checkPlace(requestCode: Int, resultCode: Int, data: Intent?): PlaceAutocompleteResult? {
+fun checkPlace(
+    requestCode: Int,
+    resultCode: Int,
+    data: Intent?,
+    placeRequestCode: Int = AUTOCOMPLETE_REQUEST_CODE
+): PlaceAutocompleteResult? {
     if (data == null) return null
-    if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+    if (requestCode == placeRequestCode) {
         return when (resultCode) {
             RESULT_OK -> PlaceAutocompleteResult.Ok(
                 Autocomplete.getPlaceFromIntent(
