@@ -8,12 +8,12 @@ sealed class LocationListAction {
     data class CheckPermission(val refActivity: WeakReference<Activity>? = null) :
         LocationListAction()
 
-    object GetLocation : LocationListAction()
+    object GetAutoLocation : LocationListAction()
     object UpdateAutoLocation : LocationListAction()
     object CancelUpdateAutoLocation : LocationListAction()
-    data class Delete(val item: LocationTimeZoneData) : LocationListAction()
-    data class Edit(val item: LocationTimeZoneData) : LocationListAction()
-    object Add : LocationListAction()
+    data class DeleteItem(val item: LocationTimeZoneData) : LocationListAction()
+    data class EditItem(val item: LocationTimeZoneData) : LocationListAction()
+    object AddItem : LocationListAction()
     data class SelectFromCustomList(val data: LocationTimeZoneData) : LocationListAction()
     data class SelectFormAuto(val data: LocationTimeZoneData) : LocationListAction()
 }

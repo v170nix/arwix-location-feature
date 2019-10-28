@@ -142,7 +142,7 @@ class LocationListViewModel(
         }
     }
 
-    suspend fun select(): Boolean {
+    suspend fun commitSelectedItem(): Boolean {
         internalViewState.selectedItem?.let { selectedItem ->
             val selectedId = selectedItem.data.id
             if (selectedId == null && !selectedItem.isAuto) return false
@@ -173,7 +173,6 @@ class LocationListViewModel(
 
     override fun dispatchAction(action: LocationListAction): LiveData<LocationListResult> {
         return liveData {
-            Log.e("action", action.toString())
             when (action) {
                 LocationListAction.UpdateAutoLocation -> {
                     LocationListResult.AutoLocation(LocationListResult.AutoItem.UpdateBegin)
@@ -186,7 +185,7 @@ class LocationListViewModel(
                         LocationListResult.AutoItem.UpdateEnd(null)
                     ).emitTo(this)
                 }
-                LocationListAction.GetLocation -> {
+                LocationListAction.GetAutoLocation -> {
                     getLocation(applicationContext, false, this)
                 }
                 is LocationListAction.CheckPermission -> {
@@ -207,7 +206,7 @@ class LocationListViewModel(
                 is LocationListAction.SelectFromCustomList -> {
                     LocationListResult.Select(action.data, false).emitTo(this)
                 }
-                is LocationListAction.Delete -> {
+                is LocationListAction.DeleteItem -> {
                     action.item.id?.let {
                         dao.deleteById(it)
                         if (internalViewState.selectedItem?.data?.id == it) {
@@ -215,10 +214,10 @@ class LocationListViewModel(
                         }
                     }
                 }
-                is LocationListAction.Edit -> {
+                is LocationListAction.EditItem -> {
                     editRepository.edit(action.item)
                 }
-                LocationListAction.Add -> {
+                LocationListAction.AddItem -> {
                     withContext(Dispatchers.Main) {
                         editRepository.create()
                     }
