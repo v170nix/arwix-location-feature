@@ -68,10 +68,10 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
                 else model.intent(LocationListAction.SelectFromCustomList(item))
             },
             onEditListener = {
-                model.nonCancelableIntent(LocationListAction.Edit(it))
+                model.nonCancelableIntent(LocationListAction.EditItem(it))
             },
             onDeleteListener = {
-                model.nonCancelableIntent(LocationListAction.Delete(it))
+                model.nonCancelableIntent(LocationListAction.DeleteItem(it))
             }
         )
         return ResultSetup(adapter, broadcastSubmitChannel.openSubscription().consumeAsFlow())
@@ -102,7 +102,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
 
     fun doRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
         if (LocationPermissionHelper.onRequestPermissionsResult(requestCode, grantResults)) {
-            model.nonCancelableIntent(LocationListAction.GetLocation)
+            model.nonCancelableIntent(LocationListAction.GetAutoLocation)
         }
     }
 
