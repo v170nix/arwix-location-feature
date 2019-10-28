@@ -185,9 +185,9 @@ class LocationListViewModel(
                         LocationListResult.AutoItem.UpdateEnd(null)
                     ).emitTo(this)
                 }
-                LocationListAction.GetAutoLocation -> {
+                LocationListAction.GetAutoLocation ->
                     getLocation(applicationContext, false, this)
-                }
+
                 is LocationListAction.CheckPermission -> {
                     val isAllow = LocationPermissionHelper.check(applicationContext)
                     if (!isAllow) {
@@ -199,13 +199,10 @@ class LocationListViewModel(
                     }
                     emit(LocationListResult.PermissionGranted)
                 }
-
-                is LocationListAction.SelectFormAuto -> {
+                is LocationListAction.SelectFormAuto ->
                     LocationListResult.Select(action.data, true).emitTo(this)
-                }
-                is LocationListAction.SelectFromCustomList -> {
+                is LocationListAction.SelectFromCustomList ->
                     LocationListResult.Select(action.data, false).emitTo(this)
-                }
                 is LocationListAction.DeleteItem -> {
                     action.item.id?.let {
                         dao.deleteById(it)
@@ -214,14 +211,9 @@ class LocationListViewModel(
                         }
                     }
                 }
-                is LocationListAction.EditItem -> {
-                    editRepository.edit(action.item)
-                }
-                LocationListAction.AddItem -> {
-                    withContext(Dispatchers.Main) {
-                        editRepository.create()
-                    }
-                }
+                is LocationListAction.EditItem -> editRepository.edit(action.item)
+                LocationListAction.AddItem -> editRepository.create()
+
             }
         }
     }

@@ -29,7 +29,8 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val modelStoreOwner: ViewModelStoreOwner,
         val lifecycleOwner: LifecycleOwner,
         val locationMainFactory: ViewModelProvider.Factory,
-        val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E")
+        val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
+        val timeZoneInstant: Instant = Instant.now()
     )
 
     data class ResultSetup(
@@ -47,7 +48,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val weakFragment = fragment.weak()
         this.adapter = LocationListAdapter(
             config.nsweStrings,
-            Instant.now(),
+            config.timeZoneInstant,
             onRequestPermission = {
                 weakFragment.runWeak {
                     LocationPermissionHelper.requestPermissionRationale(this, force = true)
