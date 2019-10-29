@@ -15,9 +15,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.arwix.location.export.LocationPositionFeature
 
-/**
- * A simple [Fragment] subclass.
- */
 class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
 
     private lateinit var positionFeature: LocationPositionFeature
@@ -32,7 +29,6 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_location_position, container, false)
     }
 
@@ -55,7 +51,13 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
             }
         }
         location_next_button.setOnClickListener {
-
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(
+                    R.id.fragment_container,
+                    LocationZoneFragment::class.java, null
+                )
+                .addToBackStack(null)
+                .commit()
         }
     }
 }

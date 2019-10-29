@@ -27,6 +27,7 @@ class LocationListFragment : Fragment() {
                 locationMainFactory = (requireContext().applicationContext as AppApplication).getLocationListFactory()
             ), this
         )
+        lifecycle.addObserver(locationListFeature)
     }
 
     override fun onCreateView(
@@ -43,7 +44,6 @@ class LocationListFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = this@LocationListFragment.result.adapter
         }
-        lifecycle.addObserver(locationListFeature)
         location_add_button.setOnClickListener {
             locationListFeature.doAddLocation()
             requireActivity().supportFragmentManager.beginTransaction()
@@ -67,6 +67,7 @@ class LocationListFragment : Fragment() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         locationListFeature.doRequestPermissionsResult(requestCode, grantResults)
     }
 }

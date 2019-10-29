@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/location_time_zone_item_auto_layout"
+        android:layout_width="0dp"
+        android:layout_height="88dp"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/window_margin"
+        android:paddingEnd="@dimen/window_margin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/location_time_zone_item_auto_error_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/location_error_time_zone_auto_find"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textColor="?attr/colorAccent"
+            android:visibility="visible"
+            tools:text="Данные о часовом поясе найти не удалось" />
+
+        <TextView
+            android:id="@+id/location_time_zone_item_auto_first_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+            app:firstBaselineToTopHeight="28dp"
+            tools:text="Moscow" />
+
+        <TextView
+            android:id="@+id/location_time_zone_item_auto_secondary_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            app:firstBaselineToTopHeight="14dp"
+            tools:text="standard time zone" />
+
+        <TextView
+            android:id="@+id/location_time_zone_item_auto_three_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            app:firstBaselineToTopHeight="18dp"
+            tools:text="GMT+03:00" />
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/location_time_zone_item_auto_progress"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="@id/location_time_zone_item_auto_layout"
+        app:layout_constraintEnd_toEndOf="@id/location_time_zone_item_auto_layout"
+        app:layout_constraintStart_toStartOf="@id/location_time_zone_item_auto_layout"
+        app:layout_constraintTop_toTopOf="@id/location_time_zone_item_auto_layout" />
+</androidx.constraintlayout.widget.ConstraintLayout>

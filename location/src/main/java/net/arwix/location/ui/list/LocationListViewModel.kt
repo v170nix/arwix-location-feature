@@ -1,7 +1,6 @@
 package net.arwix.location.ui.list
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.*
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
@@ -29,7 +28,6 @@ class LocationListViewModel(
     private val updateLocationJobs = mutableListOf<Job>()
 
     init {
-        Log.e("init", "LocationListViewModel")
         viewModelScope.launch {
             dao.getAll().asFlow().collectIndexed { index, list: List<LocationTimeZoneData> ->
                 if (index == 0) {

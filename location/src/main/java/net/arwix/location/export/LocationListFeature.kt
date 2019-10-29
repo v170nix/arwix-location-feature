@@ -85,7 +85,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
             config.modelStoreOwner,
             config.locationMainFactory
         ).get(LocationListViewModel::class.java)
-        model.liveState.observe(config.lifecycleOwner, this::render)
+        model.liveState.observe(config.lifecycleOwner, ::render)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
