@@ -1,3 +1,5 @@
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.v170nix.arwix-location-feature'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'

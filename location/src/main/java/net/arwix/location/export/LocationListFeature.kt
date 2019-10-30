@@ -1,6 +1,5 @@
 package net.arwix.location.export
 
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.RecyclerView
@@ -112,7 +111,6 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
 
 
     private fun render(state: LocationListState) {
-        Log.e("lmf", state.toString())
         when (state.autoLocationPermission) {
             LocationListState.LocationPermission.Denied -> adapter.setAutoState(
                 LocationListAdapter.AutoState.Denied
