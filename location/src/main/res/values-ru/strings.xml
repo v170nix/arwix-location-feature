@@ -1,0 +1,11 @@
+<resources>
+    <string name="location_header_list">Список</string>
+    <string name="location_header_auto">Автоматическое определение</string>
+    <string name="location_latitude">Широта</string>
+    <string name="location_longitude">Долгота</string>
+
+    <string name="location_error_range">Выход за пределы диапазона [%1$d, %2$d]</string>
+    <string name="location_error_time_zone_auto_find">Данные о часовом поясе найти не удалось</string>
+    <string name="location_permission_info">Для автоматического определения координат необходимо разрешение</string>
+    <string name="location_permission_button">Дать разрешение</string>
+</resources>

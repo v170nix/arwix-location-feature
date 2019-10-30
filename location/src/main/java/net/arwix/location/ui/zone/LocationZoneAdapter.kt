@@ -174,7 +174,7 @@ class LocationZoneAdapter(
         private val threeView: TextView = view.location_item_time_zone_three_text
 
         init {
-            view.setBackgroundResource(R.drawable.selected_list_item_dark)
+            view.setBackgroundResource(R.drawable.location_selected_list_item)
         }
 
         fun setData(item: TimeZoneDisplayEntry) {
@@ -242,7 +242,7 @@ class LocationZoneAdapter(
 
                     if (status is LocationZoneState.AutoZone.Ok) {
                         beginViewOk()
-                        resultLayout.setBackgroundResource(R.drawable.selected_list_item_dark)
+                        resultLayout.setBackgroundResource(R.drawable.location_selected_list_item)
                         val instant = Instant.now()
                         resultFirstText.text = TimeZoneRepository.getName(status.data)
                         resultSecondaryText.text =

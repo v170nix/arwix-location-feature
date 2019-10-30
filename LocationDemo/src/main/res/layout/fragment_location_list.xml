@@ -26,6 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/window_margin"
+        android:src="@drawable/ic_add_location"
         app:layout_constraintBottom_toTopOf="@id/location_main_submit_button"
         app:layout_constraintEnd_toEndOf="parent" />
 

@@ -1,15 +1,18 @@
 package net.arwix.location.ui.list
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_location_main.view.*
-import kotlinx.android.synthetic.main.item_location_main_auto.view.*
+import kotlinx.android.synthetic.main.item_location_list_auto.view.*
+import kotlinx.android.synthetic.main.item_location_list_manual.view.*
+import net.arwix.extension.getThemeColor
 import net.arwix.extension.gone
 import net.arwix.extension.visible
 import net.arwix.location.R
@@ -19,9 +22,11 @@ import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationTimeZoneData
 import org.threeten.bp.Instant
 
+
 class LocationListAdapter(
-    private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
     private val instant: Instant,
+    private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
+    private val defaultImageTintList: ColorStateList? = null,
     private val onRequestPermission: () -> Unit,
     private val onUpdateAutoLocation: () -> Unit,
     private val onSelectedListener: ((item: LocationTimeZoneData, isAuto: Boolean) -> Unit)? = null,
@@ -115,16 +120,20 @@ class LocationListAdapter(
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             1 -> AutoViewHolder(
-                inflater.inflate(R.layout.item_location_main_auto, parent, false),
+                inflater.inflate(R.layout.item_location_list_auto, parent, false),
                 instant,
-                nsweStrings
+                nsweStrings,
+                defaultImageTintList
             )
-            2 -> SimpleManualViewHolder(
+            2 -> ManualViewHolder(
                 inflater.inflate(
-                    R.layout.item_location_main,
+                    R.layout.item_location_list_manual,
                     parent,
                     false
-                )
+                ),
+                nsweStrings,
+                instant,
+                defaultImageTintList
             )
             else -> throw IllegalArgumentException()
         }
@@ -133,48 +142,21 @@ class LocationListAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
         if (item is Item.Manual) {
-            holder as ManualViewHolder
+            holder as CustomLocationViewHolder
             with(holder) {
-                latitudeView.text =
-                    latToString(item.data.latLng.latitude, nsweStrings[0], nsweStrings[1])
-                longitudeView.text =
-                    lngToString(item.data.latLng.longitude, nsweStrings[2], nsweStrings[3])
-                nameView.text = item.data.name ?: ""
-                subNameView.text = item.data.subName ?: ""
-                zoneNameView.text = TimeZoneRepository.getName(item.data.zone)
-                zoneSubNameView.text = TimeZoneRepository.getLongName(item.data.zone, instant)
-                zoneGmtOffsetView.text =
-                    TimeZoneRepository.getGmtOffsetText(item.data.zone, instant)
-                layout.tag = item
-                layout.isActivated = selectedItem?.run {
-                    this is Item.Manual && item.data.id == this.data.id
-                } ?: false
-                layout.setOnClickListener(onSelectedClickListener)
-                editButton.apply {
-                    tag = item
-                    setOnClickListener(onEditClickListener)
-                }
-                deleteButton.apply {
-                    tag = item
-                    setOnClickListener(onDeleteClickListener)
-                }
+                setTag(item)
+                if (selectedItem?.run { this is Item.Manual && item.data.id == this.data.id } == true)
+                    holder.selected() else holder.deselected()
+                setListeners(onSelectedClickListener, onEditClickListener, onDeleteClickListener)
+                setState(item)
             }
         }
         if (item is Item.Auto) {
-            holder as AutoViewHolder
+            holder as AutoLocationViewHolder
             with(holder) {
-                layout.tag = item
-                layout.isActivated = selectedItem?.run { this is Item.Auto } ?: false
-                layout.setOnClickListener(onSelectedClickListener)
-                updateButton.setOnClickListener {
-                    onUpdateAutoLocation()
-                }
-                updateLocationButton.setOnClickListener {
-                    onUpdateAutoLocation()
-                }
-                permissionDeniedButton.setOnClickListener {
-                    onRequestPermission()
-                }
+                setTag(item)
+                if (selectedItem?.run { this is Item.Auto } == true) holder.selected() else holder.deselected()
+                setListeners(onSelectedClickListener, onUpdateAutoLocation, onRequestPermission)
                 setState(item.state)
             }
         }
@@ -184,15 +166,45 @@ class LocationListAdapter(
 
     override fun getItemViewType(position: Int) = items[position].viewType
 
-    class AutoViewHolder(
+    interface Select {
+        fun selected()
+        fun deselected()
+    }
+
+    abstract class AutoLocationViewHolder(view: View) : Select, RecyclerView.ViewHolder(view) {
+        abstract fun setTag(any: Any)
+        abstract fun setListeners(
+            selectedListener: View.OnClickListener,
+            updateAutoLocation: () -> Unit,
+            requestPermission: () -> Unit
+        )
+
+        abstract fun setState(item: AutoState)
+    }
+
+
+    abstract class CustomLocationViewHolder(view: View) : Select, RecyclerView.ViewHolder(view) {
+        abstract fun setTag(any: Any)
+        abstract fun setListeners(
+            selectedListener: View.OnClickListener,
+            editListener: View.OnClickListener,
+            deleteListener: View.OnClickListener
+        )
+
+        abstract fun setState(item: Item.Manual)
+    }
+
+    private class AutoViewHolder(
         view: View,
         private val instant: Instant,
-        private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E")
-    ) : RecyclerView.ViewHolder(view) {
+        private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
+        private val defaultImageTintList: ColorStateList?
+    ) : AutoLocationViewHolder(view) {
         private val permissionDeniedInfo: TextView = view.location_permission_denied_info
         val permissionDeniedButton: Button = view.location_permission_rationale_button
         private val successLayout = view.location_main_item_auto_success_layout
         private val successNoneLayout = view.location_main_item_auto_none_layout
+        private val headerView: TextView = view.location_main_auto_header
         private val nameView: TextView = view.location_main_item_auto_name_text
         private val subNameView: TextView = view.location_main_item_auto_sub_name_text
         private val latitudeView: TextView = view.location_main_item_auto_latitude_text
@@ -203,14 +215,64 @@ class LocationListAdapter(
         val updateButton: Button = view.location_main_item_auto_success_update_button
         val updateLocationButton: Button = view.location_main_item_auto_update_button
         val layout: ConstraintLayout = view.location_main_item_auto_layout
+        private val defaultTextColors = latitudeView.textColors
+        private val headerTextColors = headerView.textColors
+        private val onSecondaryColor = latitudeView.context.getThemeColor(R.attr.colorOnSecondary)
 
-        fun setState(state: AutoState) {
-            when (state) {
+        override fun setListeners(
+            selectedListener: View.OnClickListener,
+            updateAutoLocation: () -> Unit,
+            requestPermission: () -> Unit
+        ) {
+            layout.setOnClickListener(selectedListener)
+            updateButton.setOnClickListener {
+                updateAutoLocation()
+            }
+            updateLocationButton.setOnClickListener {
+                updateAutoLocation()
+            }
+            permissionDeniedButton.setOnClickListener {
+                requestPermission()
+            }
+        }
+
+        override fun setTag(any: Any) {
+            layout.tag = any
+        }
+
+        override fun setState(item: AutoState) {
+            when (item) {
                 AutoState.None -> viewNone()
                 AutoState.Denied -> viewDenied()
                 AutoState.DeniedRationale -> viewDeniedRationale()
-                is AutoState.Allow -> viewAllow(state.data)
+                is AutoState.Allow -> viewAllow(item.data)
             }
+        }
+
+        override fun selected() {
+            layout.isActivated = true
+            headerView.setTextColor(onSecondaryColor)
+            nameView.setTextColor(onSecondaryColor)
+            subNameView.setTextColor(onSecondaryColor)
+            latitudeView.setTextColor(onSecondaryColor)
+            longitudeView.setTextColor(onSecondaryColor)
+            zoneNameView.setTextColor(onSecondaryColor)
+            zoneSubNameView.setTextColor(onSecondaryColor)
+            zoneGmtOffsetView.setTextColor(onSecondaryColor)
+            latitudeView.setTextColor(onSecondaryColor)
+        }
+
+        override fun deselected() {
+            layout.isActivated = false
+            headerView.setTextColor(headerTextColors)
+            nameView.setTextColor(defaultTextColors)
+            subNameView.setTextColor(defaultTextColors)
+            latitudeView.setTextColor(defaultTextColors)
+            longitudeView.setTextColor(defaultTextColors)
+            zoneNameView.setTextColor(defaultTextColors)
+            zoneSubNameView.setTextColor(defaultTextColors)
+            zoneGmtOffsetView.setTextColor(defaultTextColors)
+            latitudeView.setTextColor(defaultTextColors)
         }
 
         private fun viewDenied() {
@@ -238,7 +300,7 @@ class LocationListAdapter(
                 layout.background = null
                 return
             }
-            layout.setBackgroundResource(R.drawable.selected_list_item_dark)
+            layout.setBackgroundResource(R.drawable.location_selected_list_item)
             successLayout.visible()
             successNoneLayout.gone()
             latitudeView.text = latToString(data.latLng.latitude, nsweStrings[0], nsweStrings[1])
@@ -259,38 +321,89 @@ class LocationListAdapter(
         }
     }
 
-    abstract class ManualViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract val nameView: TextView
-        abstract val subNameView: TextView
-        abstract val latitudeView: TextView
-        abstract val longitudeView: TextView
-        abstract val zoneNameView: TextView
-        abstract val zoneSubNameView: TextView
-        abstract val zoneGmtOffsetView: TextView
-        abstract val editButton: Button
-        abstract val deleteButton: Button
-        abstract val layout: View
-    }
-
-    private fun createManualViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        return SimpleManualViewHolder(inflater.inflate(R.layout.item_location_main, parent, false))
-    }
-
-    private class SimpleManualViewHolder(view: View) : ManualViewHolder(view) {
-        override val nameView: TextView = view.location_main_item_name_text
-        override val subNameView: TextView = view.location_main_item_sub_name_text
-        override val latitudeView: TextView = view.location_main_item_latitude_text
-        override val longitudeView: TextView = view.location_main_item_longitude_text
-        override val zoneNameView: TextView = view.location_main_item_time_zone_first
-        override val zoneSubNameView: TextView = view.location_main_item_time_zone_second
-        override val zoneGmtOffsetView: TextView = view.location_main_item_time_zone_three
-        override val editButton: Button = view.location_main_item_edit_button
-        override val deleteButton: Button = view.location_main_item_delete_button
-        override val layout: View = view.location_main_item_layout
+    private class ManualViewHolder(
+        view: View,
+        private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
+        private val instant: Instant,
+        private val defaultImageTintList: ColorStateList?
+    ) : CustomLocationViewHolder(view) {
+        private val nameView: TextView = view.location_main_item_name_text
+        private val subNameView: TextView = view.location_main_item_sub_name_text
+        private val latitudeView: TextView = view.location_main_item_latitude_text
+        private val longitudeView: TextView = view.location_main_item_longitude_text
+        private val zoneNameView: TextView = view.location_main_item_time_zone_first
+        private val zoneSubNameView: TextView = view.location_main_item_time_zone_second
+        private val zoneGmtOffsetView: TextView = view.location_main_item_time_zone_three
+        private val editButton: Button = view.location_main_item_edit_button
+        private val deleteButton: ImageButton = view.location_main_item_delete_button
+        private val layout: View = view.location_main_item_layout
+        private val defaultTextColors = latitudeView.textColors
+        private val onSecondaryColor = latitudeView.context.getThemeColor(R.attr.colorOnSecondary)
 
         init {
-            layout.setBackgroundResource(R.drawable.selected_list_item_dark)
+            layout.setBackgroundResource(R.drawable.location_selected_list_item)
+        }
+
+        override fun setTag(any: Any) {
+            layout.tag = any
+            editButton.tag = any
+            deleteButton.tag = any
+        }
+
+        override fun setListeners(
+            selectedListener: View.OnClickListener,
+            editListener: View.OnClickListener,
+            deleteListener: View.OnClickListener
+        ) {
+            layout.setOnClickListener(selectedListener)
+            editButton.setOnClickListener(editListener)
+            deleteButton.setOnClickListener(deleteListener)
+        }
+
+        override fun setState(item: Item.Manual) {
+            latitudeView.text =
+                latToString(item.data.latLng.latitude, nsweStrings[0], nsweStrings[1])
+            longitudeView.text =
+                lngToString(item.data.latLng.longitude, nsweStrings[2], nsweStrings[3])
+            nameView.apply {
+                text = item.data.name
+                if (item.data.name.isNullOrEmpty()) gone() else visible()
+            }
+            subNameView.apply {
+                text = item.data.subName
+                if (item.data.subName.isNullOrEmpty()) gone() else visible()
+            }
+            zoneNameView.text = TimeZoneRepository.getName(item.data.zone)
+            zoneSubNameView.text = TimeZoneRepository.getLongName(item.data.zone, instant)
+            zoneGmtOffsetView.text =
+                TimeZoneRepository.getGmtOffsetText(item.data.zone, instant)
+            layout.tag = item
+        }
+
+        override fun selected() {
+            layout.isActivated = true
+            nameView.setTextColor(onSecondaryColor)
+            subNameView.setTextColor(onSecondaryColor)
+            latitudeView.setTextColor(onSecondaryColor)
+            longitudeView.setTextColor(onSecondaryColor)
+            zoneNameView.setTextColor(onSecondaryColor)
+            zoneSubNameView.setTextColor(onSecondaryColor)
+            zoneGmtOffsetView.setTextColor(onSecondaryColor)
+            latitudeView.setTextColor(onSecondaryColor)
+            deleteButton.imageTintList = ColorStateList.valueOf(onSecondaryColor)
+        }
+
+        override fun deselected() {
+            layout.isActivated = false
+            nameView.setTextColor(defaultTextColors)
+            subNameView.setTextColor(defaultTextColors)
+            latitudeView.setTextColor(defaultTextColors)
+            longitudeView.setTextColor(defaultTextColors)
+            zoneNameView.setTextColor(defaultTextColors)
+            zoneSubNameView.setTextColor(defaultTextColors)
+            zoneGmtOffsetView.setTextColor(defaultTextColors)
+            latitudeView.setTextColor(defaultTextColors)
+            deleteButton.imageTintList = defaultImageTintList
         }
     }
 
@@ -336,7 +449,7 @@ class LocationListAdapter(
         data class Allow(val data: LocationTimeZoneData?) : AutoState()
     }
 
-    private sealed class Item(val viewType: Int) {
+    sealed class Item(val viewType: Int) {
         data class Auto(val state: AutoState) : Item(1)
         data class Manual(val data: LocationTimeZoneData) : Item(2)
     }

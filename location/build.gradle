@@ -49,7 +49,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
 
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
-    implementation 'com.github.v170nix:Arwix-Common-Library:0.1.1-dev'
+    implementation 'com.github.v170nix:arwix-common-library:0.1.3-dev'
 
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"

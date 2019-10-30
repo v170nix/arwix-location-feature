@@ -23,7 +23,8 @@
             android:layout_height="wrap_content"
             android:text="@string/location_error_time_zone_auto_find"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="?attr/colorAccent"
+            android:background="?attr/colorOnError"
+            android:textColor="?attr/colorError"
             android:visibility="visible"
             tools:text="Данные о часовом поясе найти не удалось" />
 

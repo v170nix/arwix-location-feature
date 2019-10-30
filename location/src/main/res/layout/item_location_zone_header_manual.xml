@@ -7,5 +7,5 @@
     android:layout_marginEnd="@dimen/window_margin"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
-    android:text="@string/location_time_zone_header_list"
+    android:text="@string/location_header_list"
     android:textAppearance="@style/TextAppearance.MaterialComponents.Overline" />

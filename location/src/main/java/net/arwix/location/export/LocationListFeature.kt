@@ -1,5 +1,6 @@
 package net.arwix.location.export
 
+import android.content.res.ColorStateList
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.RecyclerView
@@ -29,7 +30,8 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val lifecycleOwner: LifecycleOwner,
         val locationMainFactory: ViewModelProvider.Factory,
         val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
-        val timeZoneInstant: Instant = Instant.now()
+        val timeZoneInstant: Instant = Instant.now(),
+        val defaultImageTintList: ColorStateList? = null
     )
 
     data class Result(
@@ -46,8 +48,9 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         this.config = config
         val weakFragment = fragment.weak()
         this.adapter = LocationListAdapter(
-            config.nsweStrings,
             config.timeZoneInstant,
+            config.nsweStrings,
+            defaultImageTintList = config.defaultImageTintList,
             onRequestPermission = {
                 weakFragment.runWeak {
                     LocationPermissionHelper.requestPermissionRationale(this, force = true)
