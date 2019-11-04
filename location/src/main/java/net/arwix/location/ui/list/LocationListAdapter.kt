@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_location_list_auto.view.*
 import kotlinx.android.synthetic.main.item_location_list_manual.view.*
-import net.arwix.extension.getThemeColor
 import net.arwix.extension.gone
 import net.arwix.extension.visible
 import net.arwix.location.R
@@ -26,7 +26,7 @@ import org.threeten.bp.Instant
 class LocationListAdapter(
     private val instant: Instant,
     private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
-    private val defaultImageTintList: ColorStateList? = null,
+    @ColorInt private val onSecondaryColor: Int,
     private val onRequestPermission: () -> Unit,
     private val onUpdateAutoLocation: () -> Unit,
     private val onSelectedListener: ((item: LocationTimeZoneData, isAuto: Boolean) -> Unit)? = null,
@@ -123,17 +123,13 @@ class LocationListAdapter(
                 inflater.inflate(R.layout.item_location_list_auto, parent, false),
                 instant,
                 nsweStrings,
-                defaultImageTintList
+                onSecondaryColor
             )
             2 -> ManualViewHolder(
-                inflater.inflate(
-                    R.layout.item_location_list_manual,
-                    parent,
-                    false
-                ),
-                nsweStrings,
+                inflater.inflate(R.layout.item_location_list_manual, parent, false),
                 instant,
-                defaultImageTintList
+                nsweStrings,
+                onSecondaryColor
             )
             else -> throw IllegalArgumentException()
         }
@@ -198,7 +194,7 @@ class LocationListAdapter(
         view: View,
         private val instant: Instant,
         private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
-        private val defaultImageTintList: ColorStateList?
+        private val onSecondaryColor: Int
     ) : AutoLocationViewHolder(view) {
         private val permissionDeniedInfo: TextView = view.location_permission_denied_info
         val permissionDeniedButton: Button = view.location_permission_rationale_button
@@ -217,7 +213,6 @@ class LocationListAdapter(
         val layout: ConstraintLayout = view.location_main_item_auto_layout
         private val defaultTextColors = latitudeView.textColors
         private val headerTextColors = headerView.textColors
-        private val onSecondaryColor = latitudeView.context.getThemeColor(R.attr.colorOnSecondary)
 
         override fun setListeners(
             selectedListener: View.OnClickListener,
@@ -323,9 +318,9 @@ class LocationListAdapter(
 
     private class ManualViewHolder(
         view: View,
-        private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
         private val instant: Instant,
-        private val defaultImageTintList: ColorStateList?
+        private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
+        private val onSecondaryColor: Int
     ) : CustomLocationViewHolder(view) {
         private val nameView: TextView = view.location_main_item_name_text
         private val subNameView: TextView = view.location_main_item_sub_name_text
@@ -337,8 +332,8 @@ class LocationListAdapter(
         private val editButton: Button = view.location_main_item_edit_button
         private val deleteButton: ImageButton = view.location_main_item_delete_button
         private val layout: View = view.location_main_item_layout
+        private val defaultImageTintList: ColorStateList? = deleteButton.imageTintList
         private val defaultTextColors = latitudeView.textColors
-        private val onSecondaryColor = latitudeView.context.getThemeColor(R.attr.colorOnSecondary)
 
         init {
             layout.setBackgroundResource(R.drawable.location_selected_list_item)

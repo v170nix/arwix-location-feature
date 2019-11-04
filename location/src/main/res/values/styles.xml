@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="LocationInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+    <style name="LocationFeature" />
+
+    <style name="LocationFeature.InputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxStrokeColor">?attr/colorSecondary</item>
     </style>
+
+    <style name="LocationFeature.OutlinedButton" parent="Widget.MaterialComponents.Button.OutlinedButton" />
+
+    <style name="LocationFeature.TextBody">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body2</item>
+    </style>
+
+    <style name="LocationFeature.Overline">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Overline</item>
+    </style>
+
+    <style name="LocationFeature.Subtitle">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Subtitle1
+        </item>
+    </style>
+
+    <style name="LocationFeature.Title">
+        <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Headline6
+        </item>
+    </style>
+
+    <style name="LocationFeature.TextButton" parent="Widget.MaterialComponents.Button.TextButton" />
 </resources>

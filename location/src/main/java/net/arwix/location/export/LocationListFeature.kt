@@ -1,6 +1,5 @@
 package net.arwix.location.export
 
-import android.content.res.ColorStateList
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.RecyclerView
@@ -12,8 +11,10 @@ import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import net.arwix.extension.getThemeColor
 import net.arwix.extension.runWeak
 import net.arwix.extension.weak
+import net.arwix.location.R
 import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.domain.LocationSettingHelper
 import net.arwix.location.ui.list.LocationListAction
@@ -29,9 +30,10 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val modelStoreOwner: ViewModelStoreOwner,
         val lifecycleOwner: LifecycleOwner,
         val locationMainFactory: ViewModelProvider.Factory,
-        val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
         val timeZoneInstant: Instant = Instant.now(),
-        val defaultImageTintList: ColorStateList? = null
+        val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
+        val onSecondaryColor: Int? = null,
+        val onEditView: (() -> Unit)? = null
     )
 
     data class Result(
@@ -50,7 +52,8 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         this.adapter = LocationListAdapter(
             config.timeZoneInstant,
             config.nsweStrings,
-            defaultImageTintList = config.defaultImageTintList,
+            onSecondaryColor = config.onSecondaryColor
+                ?: fragment.requireContext().getThemeColor(R.attr.colorOnSecondary),
             onRequestPermission = {
                 weakFragment.runWeak {
                     LocationPermissionHelper.requestPermissionRationale(this, force = true)
@@ -72,6 +75,7 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
             },
             onEditListener = {
                 model.nonCancelableIntent(LocationListAction.EditItem(it))
+                this.config.onEditView?.run { invoke() }
             },
             onDeleteListener = {
                 model.nonCancelableIntent(LocationListAction.DeleteItem(it))
@@ -95,6 +99,9 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         broadcastSubmitChannel.cancel()
         cancel()
     }
+
+    suspend fun commitSelectedItem() = model.commitSelectedItem()
+
 
     fun doAddLocation() {
         model.nonCancelableIntent(LocationListAction.AddItem)

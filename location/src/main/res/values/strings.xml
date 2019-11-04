@@ -3,6 +3,9 @@
     <string name="location_header_auto">Auto detect</string>
     <string name="location_latitude">Latitude</string>
     <string name="location_longitude">Longitude</string>
+    <string name="location_update">Update</string>
+    <string name="location_edit">Edit</string>
+    <string name="location_get_location">Get Location</string>
 
     <string name="location_error_range">The value is out of the range [%1$d, %2$d]</string>
     <string name="location_error_time_zone_auto_find">No time zone data found</string>

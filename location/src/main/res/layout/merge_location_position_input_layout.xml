@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
-            android:drawableStart="@drawable/ic_search"
+            android:drawableStart="@drawable/ic_location_feature_search"
             android:drawablePadding="12dp"
             android:gravity="center_vertical"
             android:paddingStart="16dp"
@@ -32,13 +32,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ic_expand_less" />
+            android:src="@drawable/ic_location_feature_expand_less" />
 
     </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/location_position_latitude_input_layout"
-        style="@style/LocationInputLayoutStyle"
+        style="@style/LocationFeature.InputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -60,7 +60,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/location_position_longitude_input_layout"
-        style="@style/LocationInputLayoutStyle"
+        style="@style/LocationFeature.InputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

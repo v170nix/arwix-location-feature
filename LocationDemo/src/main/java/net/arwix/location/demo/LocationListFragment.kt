@@ -10,9 +10,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_location_list.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import net.arwix.location.export.LocationListFeature
+import java.lang.ref.WeakReference
 
-class LocationListFragment : Fragment() {
+class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private lateinit var locationListFeature: LocationListFeature
     private lateinit var result: LocationListFeature.Result
@@ -24,7 +29,17 @@ class LocationListFragment : Fragment() {
             LocationListFeature.Config(
                 modelStoreOwner = this,
                 lifecycleOwner = this,
-                locationMainFactory = (requireContext().applicationContext as AppApplication).getLocationListFactory()
+                locationMainFactory = (requireContext().applicationContext as AppApplication).getLocationListFactory(),
+                onSecondaryColor = 0xFF000000.toInt(),
+                onEditView = {
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragment_container,
+                            LocationPositionFragment::class.java, null
+                        )
+                        .addToBackStack(null)
+                        .commit()
+                }
             ), this
         )
         lifecycle.addObserver(locationListFeature)
@@ -53,6 +68,19 @@ class LocationListFragment : Fragment() {
                 )
                 .addToBackStack(null)
                 .commit()
+        }
+        val refButton = WeakReference(location_main_submit_button)
+        location_main_submit_button.setOnClickListener {
+            launch {
+                locationListFeature.commitSelectedItem()
+            }
+        }
+        launch {
+            result.flowSubmitAvailable.collect {
+                refButton.get()?.run {
+                    isEnabled = it
+                }
+            }
         }
     }
 

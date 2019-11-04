@@ -97,11 +97,11 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
             }
             expandInputButton.setOnClickListener {
                 if (this@LocationPositionFeature.config.inputView.latitudeInputLayout.visibility == View.VISIBLE) {
-                    expandInputButton.setImageResource(R.drawable.ic_expand_less)
+                    expandInputButton.setImageResource(R.drawable.ic_location_feature_expand_less)
                     latitudeInputLayout.gone()
                     longitudeInputLayout.gone()
                 } else {
-                    expandInputButton.setImageResource(R.drawable.ic_expand_more)
+                    expandInputButton.setImageResource(R.drawable.ic_location_feature_expand_more)
                     latitudeInputLayout.visible()
                     longitudeInputLayout.visible()
                 }
