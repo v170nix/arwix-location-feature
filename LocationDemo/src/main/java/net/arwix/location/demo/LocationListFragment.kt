@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_location_list.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.arwix.location.export.LocationListFeature
@@ -20,12 +21,11 @@ import java.lang.ref.WeakReference
 class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
 
     private lateinit var locationListFeature: LocationListFeature
-    private lateinit var result: LocationListFeature.Result
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         locationListFeature = LocationListFeature()
-        result = locationListFeature.setup(
+        locationListFeature.setup(
             LocationListFeature.Config(
                 modelStoreOwner = this,
                 lifecycleOwner = this,
@@ -57,7 +57,7 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
         with(location_main_list) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            adapter = this@LocationListFragment.result.adapter
+            adapter = locationListFeature.getAdapter()
         }
         location_add_button.setOnClickListener {
             locationListFeature.doAddLocation()
@@ -76,12 +76,17 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
             }
         }
         launch {
-            result.flowSubmitAvailable.collect {
+            locationListFeature.getSelectAvailableAsFollow().collect {
                 refButton.get()?.run {
                     isEnabled = it
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

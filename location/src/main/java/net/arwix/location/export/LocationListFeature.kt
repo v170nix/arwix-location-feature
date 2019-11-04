@@ -2,7 +2,6 @@ package net.arwix.location.export
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -36,17 +35,12 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val onEditView: (() -> Unit)? = null
     )
 
-    data class Result(
-        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>,
-        val flowSubmitAvailable: Flow<Boolean>
-    )
-
     private lateinit var config: Config
     private lateinit var model: LocationListViewModel
     private lateinit var adapter: LocationListAdapter
     private var broadcastSubmitChannel: BroadcastChannel<Boolean> = ConflatedBroadcastChannel()
 
-    fun setup(config: Config, fragment: Fragment): Result {
+    fun setup(config: Config, fragment: Fragment) {
         this.config = config
         val weakFragment = fragment.weak()
         this.adapter = LocationListAdapter(
@@ -81,7 +75,6 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
                 model.nonCancelableIntent(LocationListAction.DeleteItem(it))
             }
         )
-        return Result(adapter, broadcastSubmitChannel.openSubscription().consumeAsFlow())
     }
 
 
@@ -102,6 +95,11 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
 
     suspend fun commitSelectedItem() = model.commitSelectedItem()
 
+    fun getSelectAvailableAsFollow(): Flow<Boolean> {
+        return broadcastSubmitChannel.openSubscription().consumeAsFlow()
+    }
+
+    fun getAdapter() = adapter
 
     fun doAddLocation() {
         model.nonCancelableIntent(LocationListAction.AddItem)

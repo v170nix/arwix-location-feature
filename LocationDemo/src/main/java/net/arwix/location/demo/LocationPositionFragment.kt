@@ -2,6 +2,7 @@ package net.arwix.location.demo
 
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,7 +41,7 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
                 lifecycleOwner = this,
                 locationPositionFactory = (requireContext().applicationContext as AppApplication).getLocationPositionFactory(),
                 mapFragment = childFragmentManager.findFragmentById(R.id.location_position_map) as SupportMapFragment,
-                placeKey = "23424242",
+                placeKey = "AIzaSyAvar6k6vq66mfSMOsttrw_09gqNSWae3g",
                 inputView = positionFeature.createDefaultEditPositionView(view)
             ), this
         )
@@ -59,5 +60,10 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
                 .addToBackStack(null)
                 .commit()
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        positionFeature.doActivityResult(requestCode, resultCode, data)
     }
 }

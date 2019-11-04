@@ -35,6 +35,7 @@ class LocationCreateEditRepository(private val dao: LocationDao) {
                 .apply { data.bearing?.run(::bearing) }
                 .build()
         )
+        _isNewData.value = false
         _isEditData.value = data
     }
 

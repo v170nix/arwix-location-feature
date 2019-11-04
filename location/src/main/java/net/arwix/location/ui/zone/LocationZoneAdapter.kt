@@ -1,6 +1,5 @@
 package net.arwix.location.ui.zone
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -144,7 +143,6 @@ class LocationZoneAdapter(
             if (selectionId == index) return
             deselect()
             selectionId = index
-            Log.e("select", index.toString())
             notifyItemChanged(index)
         }
     }

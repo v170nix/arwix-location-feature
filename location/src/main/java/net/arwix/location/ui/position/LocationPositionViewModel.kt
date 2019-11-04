@@ -27,7 +27,7 @@ class LocationPositionViewModel(
     init {
         viewModelScope.launch {
             repository.isNewData.asFlow().collect {
-                notificationFromObserver(LocationPositionResult.InitData(null))
+                if (it) notificationFromObserver(LocationPositionResult.InitData(null))
             }
         }
         viewModelScope.launch {
@@ -46,29 +46,36 @@ class LocationPositionViewModel(
 
     private suspend fun LocationPositionAction.dispatch(
         scope: LiveDataScope<LocationPositionResult>
-    ) = when (this) {
-        is LocationPositionAction.Init -> {
-            scope.emit(LocationPositionResult.InitData(internalViewState.data))
-        }
-        is LocationPositionAction.ChangeFromPlace -> {
-            if (place.latLng == null)
-                scope.emit(LocationPositionResult.ErrorPlaceLatLng(place))
-            else
-                scope.emit(LocationPositionResult.SuccessPlace(place, cameraPosition))
-        }
-        is LocationPositionAction.ChangeFromMap -> {
-            scope.emit(LocationPositionResult.ProgressGeocoderFromMap(latLng, cameraPosition))
-            locationGeocoderUseCase.geocode(scope, latLng, cameraPosition)
-        }
-        is LocationPositionAction.ChangeFromInput -> {
-            if (latitude == null || latitude < -90.0 || latitude > 90.0 ||
-                longitude == null || longitude < -180.0 || longitude > 180.0
-            ) {
-                scope.emit(LocationPositionResult.ErrorInput(latitude, longitude))
-            } else {
-                val latLng = LatLng(latitude, longitude)
-                scope.emit(LocationPositionResult.ProgressGeocoderFromInput(latLng, cameraPosition))
+    ) {
+        return when (this) {
+            is LocationPositionAction.Init -> {
+                scope.emit(LocationPositionResult.InitData(internalViewState.data))
+            }
+            is LocationPositionAction.ChangeFromPlace -> {
+                if (place.latLng == null)
+                    scope.emit(LocationPositionResult.ErrorPlaceLatLng(place))
+                else
+                    scope.emit(LocationPositionResult.SuccessPlace(place, cameraPosition))
+            }
+            is LocationPositionAction.ChangeFromMap -> {
+                scope.emit(LocationPositionResult.ProgressGeocoderFromMap(latLng, cameraPosition))
                 locationGeocoderUseCase.geocode(scope, latLng, cameraPosition)
+            }
+            is LocationPositionAction.ChangeFromInput -> {
+                if (latitude == null || latitude < -90.0 || latitude > 90.0 ||
+                    longitude == null || longitude < -180.0 || longitude > 180.0
+                ) {
+                    scope.emit(LocationPositionResult.ErrorInput(latitude, longitude))
+                } else {
+                    val latLng = LatLng(latitude, longitude)
+                    scope.emit(
+                        LocationPositionResult.ProgressGeocoderFromInput(
+                            latLng,
+                            cameraPosition
+                        )
+                    )
+                    locationGeocoderUseCase.geocode(scope, latLng, cameraPosition)
+                }
             }
         }
     }
