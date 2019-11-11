@@ -1,12 +1,10 @@
 package net.arwix.location.export
 
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import net.arwix.location.ui.zone.LocationZoneAction
 import net.arwix.location.ui.zone.LocationZoneAdapter
@@ -29,18 +27,12 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
         val timeZoneInstant: Instant = Instant.now()
     )
 
-    data class Result(
-        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>,
-        val flowSubmitAvailable: Flow<Boolean>
-    )
-
-    fun setup(config: Config, fragment: Fragment): Result {
+    fun setup(config: Config) {
         this.config = config
         adapter = LocationZoneAdapter(scope = this) { zoneId, isAuto ->
             if (isAuto) model.intent(LocationZoneAction.SelectZoneFormAuto(zoneId))
             else model.intent(LocationZoneAction.SelectZoneFromList(zoneId))
         }
-        return Result(adapter, broadcastSubmitChannel.openSubscription().consumeAsFlow())
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -58,6 +50,10 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
         broadcastSubmitChannel.cancel()
         cancel()
     }
+
+    fun getAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder> = adapter
+
+    fun submitAvailableAsFlow() = broadcastSubmitChannel.openSubscription().consumeAsFlow()
 
     suspend fun doSubmitLocation() {
         model.submit()

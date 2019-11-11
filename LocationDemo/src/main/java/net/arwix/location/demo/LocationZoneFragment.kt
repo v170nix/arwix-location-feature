@@ -20,17 +20,16 @@ import net.arwix.location.export.LocationZoneFeature
 class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
 
     private lateinit var locationZoneFeature: LocationZoneFeature
-    private lateinit var result: LocationZoneFeature.Result
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         locationZoneFeature = LocationZoneFeature()
-        result = locationZoneFeature.setup(
+        locationZoneFeature.setup(
             LocationZoneFeature.Config(
                 modelStoreOwner = this,
                 lifecycleOwner = this,
                 locationZoneFactory = (requireContext().applicationContext as AppApplication).getLocationZoneFactory()
-            ), this
+            )
         )
         lifecycle.addObserver(locationZoneFeature)
     }
@@ -51,10 +50,10 @@ class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
         with(location_time_zone_list) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            adapter = result.adapter
+            adapter = locationZoneFeature.getAdapter()
         }
         launch {
-            result.flowSubmitAvailable.collect {
+            locationZoneFeature.submitAvailableAsFlow().collect {
                 location_next_button.isEnabled = it
             }
         }
