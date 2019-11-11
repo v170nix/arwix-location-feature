@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.SupportMapFragment
+import kotlinx.android.synthetic.main.fragment_location_position.*
 import kotlinx.android.synthetic.main.merge_location_prev_next_bar.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -19,7 +20,6 @@ import net.arwix.location.export.LocationPositionFeature
 class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
 
     private lateinit var positionFeature: LocationPositionFeature
-    private lateinit var result: LocationPositionFeature.Result
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -35,7 +35,7 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        result = positionFeature.setup(
+        positionFeature.setup(
             LocationPositionFeature.Config(
                 modelStoreOwner = this,
                 lifecycleOwner = this,
@@ -47,7 +47,7 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
         )
         lifecycle.addObserver(positionFeature)
         launch {
-            result.flowNextStepAvailable.collect {
+            positionFeature.nextStepAvailableAsFlow().collect {
                 location_next_button.isEnabled = it
             }
         }
@@ -60,6 +60,7 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
                 .addToBackStack(null)
                 .commit()
         }
+        location_position_input_layout.setBackgroundColor(resources.getColor(R.color.colorBgOnMap))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

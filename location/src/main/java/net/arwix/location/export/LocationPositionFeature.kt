@@ -4,6 +4,7 @@ import android.content.Intent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
@@ -26,7 +27,6 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import net.arwix.extension.*
@@ -51,10 +51,6 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         val errorFormatString: String = mapFragment.resources.getString(R.string.location_error_range)
     )
 
-    data class Result(
-        val flowNextStepAvailable: Flow<Boolean>
-    )
-
     private lateinit var config: Config
     private var broadcastNextStepChannel: BroadcastChannel<Boolean> = ConflatedBroadcastChannel()
     private lateinit var model: LocationPositionViewModel
@@ -68,7 +64,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         Place.Field.ADDRESS
     )
 
-    fun setup(config: Config, fragment: Fragment): Result {
+    fun setup(config: Config, fragment: Fragment) {
         this.config = config
         if (!Places.isInitialized()) {
             Places.initialize(fragment.requireContext().applicationContext, config.placeKey)
@@ -108,8 +104,18 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
             }
         }
         config.mapFragment.getMapAsync(this)
-        return Result(broadcastNextStepChannel.openSubscription().consumeAsFlow())
+
+        val googleLogo = config.mapFragment.view!!.findViewWithTag<View>("GoogleWatermark")
+        val glLayoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, 0)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
+        googleLogo.layoutParams = glLayoutParams
     }
+
+    fun nextStepAvailableAsFlow() = broadcastNextStepChannel.openSubscription().consumeAsFlow()
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {

@@ -34,6 +34,7 @@
         android:id="@+id/location_button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/colorBgOnMap"
         app:layout_constraintBottom_toBottomOf="@+id/location_position_map"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
