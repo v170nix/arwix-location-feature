@@ -1,6 +1,7 @@
 package net.arwix.location.ui.list
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.*
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
@@ -202,6 +203,7 @@ class LocationListViewModel(
                 is LocationListAction.SelectFromCustomList -> {
                     val id = action.data.id ?: return@liveData
                     val item = dao.getItem(id) ?: return@liveData
+                    Log.e("item select", item.toString())
                     LocationListResult.Select(item, false).emitTo(this)
                 }
                 is LocationListAction.DeleteItem -> {
