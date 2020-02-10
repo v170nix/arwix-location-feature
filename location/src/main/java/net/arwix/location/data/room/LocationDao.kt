@@ -11,6 +11,9 @@ interface LocationDao {
     @Query("SELECT * FROM location_tz_table")
     fun getAll(): LiveData<List<LocationTimeZoneData>>
 
+    @Query("SELECT * FROM location_tz_table WHERE id = :id LIMIT 1")
+    suspend fun getItem(id: Int): LocationTimeZoneData?
+
     @Insert
     suspend fun insert(data: LocationTimeZoneData)
 

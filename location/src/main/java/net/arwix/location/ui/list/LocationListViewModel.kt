@@ -199,8 +199,11 @@ class LocationListViewModel(
                 }
                 is LocationListAction.SelectFormAuto ->
                     LocationListResult.Select(action.data, true).emitTo(this)
-                is LocationListAction.SelectFromCustomList ->
-                    LocationListResult.Select(action.data, false).emitTo(this)
+                is LocationListAction.SelectFromCustomList -> {
+                    val id = action.data.id ?: return@liveData
+                    val item = dao.getItem(id) ?: return@liveData
+                    LocationListResult.Select(item, false).emitTo(this)
+                }
                 is LocationListAction.DeleteItem -> {
                     action.item.id?.let {
                         dao.deleteById(it)
