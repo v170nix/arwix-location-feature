@@ -58,21 +58,6 @@ class LocationCreateEditRepository(
         )
         isEditData.value?.let { editData ->
             dao.update(data.copy(id = editData.id))
-            val locationZoneId: LocationZoneId = selectedDatabase.getLZData() ?: return
-            if (locationZoneId is LocationZoneId.Manual && locationZoneId.id == editData.id) {
-                selectedDatabase.setLZData(
-                    locationZoneId.copy(
-                        id = locationZoneId.id,
-                        name = data.name,
-                        subName = data.subName,
-                        latitude = data.latLng.latitude,
-                        longitude = data.latLng.longitude,
-                        altitude = 0.0,
-                        zoneId = data.zone
-                    )
-                )
-            }
-
         } ?: dao.insert(data)
     }
 
