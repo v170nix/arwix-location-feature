@@ -3,11 +3,15 @@ package net.arwix.location.data
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.CameraPosition
+import net.arwix.location.LocationZoneIdSelectedDatabase
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.data.room.LocationTimeZoneData
 import org.threeten.bp.ZoneId
 
-class LocationCreateEditRepository(private val dao: LocationDao) {
+class LocationCreateEditRepository(
+    val dao: LocationDao,
+    val selectedDatabase: LocationZoneIdSelectedDatabase
+) {
 
     val locationData = MutableLiveData<FeatureLocationData>()
     val timeZoneData = MutableLiveData<ZoneId>()
@@ -54,6 +58,21 @@ class LocationCreateEditRepository(private val dao: LocationDao) {
         )
         isEditData.value?.let { editData ->
             dao.update(data.copy(id = editData.id))
+            val locationZoneId: LocationZoneId = selectedDatabase.getLZData() ?: return
+            if (locationZoneId is LocationZoneId.Manual && locationZoneId.id == editData.id) {
+                selectedDatabase.setLZData(
+                    locationZoneId.copy(
+                        id = locationZoneId.id,
+                        name = data.name,
+                        subName = data.subName,
+                        latitude = data.latLng.latitude,
+                        longitude = data.latLng.longitude,
+                        altitude = 0.0,
+                        zoneId = data.zone
+                    )
+                )
+            }
+
         } ?: dao.insert(data)
     }
 

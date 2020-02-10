@@ -26,18 +26,19 @@ class AppApplication : Application() {
         super.onCreate()
         AndroidThreeTen.init(this)
         db = Room.databaseBuilder(this, LocationDatabase::class.java, "location-db").build()
-        val editRepository = LocationCreateEditRepository(db.recordDao())
-        val geocoderRepository = GeocoderRepository(this)
-        val geocoderUseCase = LocationGeocoderUseCase(geocoderRepository)
-        val timeZoneRepository = TimeZoneRepository(this)
-        val googleZoneRepository =
-            TimeZoneGoogleRepository("AIzaSyCwTEbGJWjBPJvagE0vKyS22rgXfNNc8Ag")
         locationZoneIdSelectedDatabase = AppLocationPreferencesSelected(
             applicationContext.getSharedPreferences(
                 "location_preferences",
                 Context.MODE_PRIVATE
             )
         )
+        val editRepository =
+            LocationCreateEditRepository(db.recordDao(), locationZoneIdSelectedDatabase)
+        val geocoderRepository = GeocoderRepository(this)
+        val geocoderUseCase = LocationGeocoderUseCase(geocoderRepository)
+        val timeZoneRepository = TimeZoneRepository(this)
+        val googleZoneRepository =
+            TimeZoneGoogleRepository("")
         locationListFactory = createLocationListFactory(
             this,
             locationSelectedDatabase = locationZoneIdSelectedDatabase,
