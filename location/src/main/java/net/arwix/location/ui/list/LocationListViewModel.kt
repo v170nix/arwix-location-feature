@@ -1,7 +1,6 @@
 package net.arwix.location.ui.list
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.*
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
@@ -155,14 +154,16 @@ class LocationListViewModel(
                     zoneId = selectedItem.data.zone
                 )
             } else {
+                if (selectedId == null) return false
+                val item = dao.getItem(selectedId) ?: return false
                 LocationZoneId.Manual(
-                    id = selectedId!!,
-                    name = selectedItem.data.name,
-                    subName = selectedItem.data.subName,
-                    latitude = selectedItem.data.latLng.latitude,
-                    longitude = selectedItem.data.latLng.longitude,
+                    id = selectedId,
+                    name = item.name,
+                    subName = item.subName,
+                    latitude = item.latLng.latitude,
+                    longitude = item.latLng.longitude,
                     altitude = 0.0,
-                    zoneId = selectedItem.data.zone
+                    zoneId = item.zone
                 )
             }
             return selectedDatabase.setLZData(data)
@@ -200,12 +201,8 @@ class LocationListViewModel(
                 }
                 is LocationListAction.SelectFormAuto ->
                     LocationListResult.Select(action.data, true).emitTo(this)
-                is LocationListAction.SelectFromCustomList -> {
-                    val id = action.data.id ?: return@liveData
-                    val item = dao.getItem(id) ?: return@liveData
-                    Log.e("item select", item.toString())
-                    LocationListResult.Select(item, false).emitTo(this)
-                }
+                is LocationListAction.SelectFromCustomList ->
+                    LocationListResult.Select(action.data, false).emitTo(this)
                 is LocationListAction.DeleteItem -> {
                     action.item.id?.let {
                         dao.deleteById(it)
