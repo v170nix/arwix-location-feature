@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import net.arwix.extension.getThemeColor
-import net.arwix.extension.runWeak
-import net.arwix.extension.weak
 import net.arwix.location.R
 import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.domain.LocationSettingHelper
@@ -21,17 +19,15 @@ import net.arwix.location.ui.list.LocationListState
 import net.arwix.location.ui.list.LocationListViewModel
 import org.threeten.bp.Instant
 
-open class LibLocationListFragment : Fragment() {
+abstract class LocationListFragment : Fragment() {
 
     @Suppress("ArrayInDataClass")
     data class Config(
         val modelStoreOwner: ViewModelStoreOwner,
-//        val lifecycleOwner: LifecycleOwner,
         val locationMainFactory: ViewModelProvider.Factory,
         val timeZoneInstant: Instant = Instant.now(),
         val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
-        val colorOnSecondary: Int? = null,
-        val gotoEditFragment: (() -> Unit)? = null
+        val colorOnSecondary: Int? = null
     )
 
     private lateinit var config: Config
@@ -41,27 +37,21 @@ open class LibLocationListFragment : Fragment() {
     private val _submitState = MutableStateFlow(false)
     val submitState: StateFlow<Boolean> = _submitState
 
-    fun setup(config: Config, fragment: Fragment) {
+    protected fun setup(config: Config) {
         this.config = config
-        val weakFragment = fragment.weak()
-
         this.adapter = LocationListAdapter(
             config.timeZoneInstant,
             config.nsweStrings,
             onSecondaryColor = config.colorOnSecondary
-                ?: fragment.requireContext().getThemeColor(R.attr.colorOnSecondary),
+                ?: requireContext().getThemeColor(R.attr.colorOnSecondary),
             onRequestPermission = {
-                weakFragment.runWeak {
-                    LocationPermissionHelper.requestPermissionRationale(this, force = true)
-                }
+                LocationPermissionHelper.requestPermissionRationale(this, force = true)
             },
             onUpdateAutoLocation = {
                 lifecycleScope.launch {
-                    weakFragment.runWeak {
-                        if (!LocationSettingHelper.check(this)) {
-                            if (this.isRemoving || this.isDetached) return@launch
-                            model.nonCancelableIntent(LocationListAction.UpdateAutoLocation)
-                        }
+                    if (!LocationSettingHelper.check(this@LocationListFragment)) {
+                        if (isRemoving || isDetached) return@launch
+                        model.nonCancelableIntent(LocationListAction.UpdateAutoLocation)
                     }
                 }
             },
@@ -71,7 +61,7 @@ open class LibLocationListFragment : Fragment() {
             },
             onEditListener = {
                 model.nonCancelableIntent(LocationListAction.EditItem(it))
-                this.config.gotoEditFragment?.invoke()
+                navigateToEditItemFragment()
             },
             onDeleteListener = {
                 model.nonCancelableIntent(LocationListAction.DeleteItem(it))
@@ -88,23 +78,11 @@ open class LibLocationListFragment : Fragment() {
         model.liveState.observe(this, Observer(::render))
     }
 
-//    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-//    fun onCreate() {
-//        model = ViewModelProvider(
-//            config.modelStoreOwner,
-//            config.locationMainFactory
-//        ).get(LocationListViewModel::class.java)
-//        model.liveState.observe(this, Observer(::render))
-//    }
-
-//    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-//    fun onDestroy() {
-//        cancel()
-//    }
-
     suspend fun commitSelectedItem() = model.commitSelectedItem()
 
     fun getAdapter() = adapter
+
+    abstract fun navigateToEditItemFragment()
 
     fun doAddLocation() {
         model.nonCancelableIntent(LocationListAction.AddItem)
