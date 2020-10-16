@@ -7,7 +7,7 @@ import net.arwix.location.data.EditLocationSubData
 data class LocationPositionState(
     val updateMapAfterChangeLocation: Boolean = false,
     val subData: EditLocationSubData? = null,
-    val nextStepAvailable: Boolean = false,
+    val nextStepIsAvailable: Boolean = false,
     val error: ErrorState? = null
 ) {
     sealed class ErrorState {

@@ -5,11 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import net.arwix.location.LocationZoneIdSelectedDatabase
 import net.arwix.location.data.GeocoderRepository
-import net.arwix.location.data.LocationCreateEditRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.domain.LocationGeocoderUseCase
+import net.arwix.location.edit.data.LocationCreateEditRepository
 import net.arwix.location.ui.list.LocationListViewModel
 import net.arwix.location.ui.position.LocationPositionViewModel
 import net.arwix.location.ui.zone.LocationZoneViewModel

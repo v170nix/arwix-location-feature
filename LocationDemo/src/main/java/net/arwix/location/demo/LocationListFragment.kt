@@ -7,31 +7,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_location_list.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import net.arwix.location.export.LocationListFeature
+import net.arwix.location.export.LibLocationListFragment
 import java.lang.ref.WeakReference
 
-class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
+class LocationListFragment : LibLocationListFragment() {
 
-    private lateinit var locationListFeature: LocationListFeature
+//    private lateinit var locationListFeature: LocationListFeature
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        locationListFeature = LocationListFeature()
-        locationListFeature.setup(
-            LocationListFeature.Config(
+//        locationListFeature = LocationListFeature()
+        setup(
+            Config(
                 modelStoreOwner = this,
-                lifecycleOwner = this,
                 locationMainFactory = (requireContext().applicationContext as AppApplication).getLocationListFactory(),
-                onSecondaryColor = 0xFF000000.toInt(),
-                onEditView = {
+                colorOnSecondary = 0xFF000000.toInt(),
+                gotoEditFragment = {
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(
                             R.id.fragment_container,
@@ -42,7 +38,7 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
                 }
             ), this
         )
-        lifecycle.addObserver(locationListFeature)
+//        lifecycle.addObserver(locationListFeature)
     }
 
     override fun onCreateView(
@@ -57,10 +53,10 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
         with(location_main_list) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            adapter = locationListFeature.getAdapter()
+            adapter = this@LocationListFragment.getAdapter()
         }
         location_add_button.setOnClickListener {
-            locationListFeature.doAddLocation()
+            doAddLocation()
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.fragment_container,
@@ -71,12 +67,12 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
         }
         val refButton = WeakReference(location_main_submit_button)
         location_main_submit_button.setOnClickListener {
-            launch {
-                locationListFeature.commitSelectedItem()
+            lifecycleScope.launch {
+                commitSelectedItem()
             }
         }
-        launch {
-            locationListFeature.submitState.collect {
+        lifecycleScope.launch {
+            submitState.collect {
                 refButton.get()?.run {
                     isEnabled = it
                 }
@@ -84,14 +80,9 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cancel()
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        locationListFeature.doActivityResult(requestCode, resultCode)
+        doActivityResult(requestCode, resultCode)
     }
 
 
@@ -101,6 +92,6 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        locationListFeature.doRequestPermissionsResult(requestCode, grantResults)
+        doRequestPermissionsResult(requestCode, grantResults)
     }
 }

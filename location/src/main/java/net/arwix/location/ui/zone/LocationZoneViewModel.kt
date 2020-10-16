@@ -6,9 +6,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.arwix.location.data.LocationCreateEditRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
+import net.arwix.location.edit.data.LocationCreateEditRepository
 import net.arwix.mvi.SimpleIntentViewModel
 
 class LocationZoneViewModel(

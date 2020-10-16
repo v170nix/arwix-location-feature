@@ -146,7 +146,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
                     config.inputView.longitudeInputLayout.error = null
             }
         }
-        _submitState.value = state.nextStepAvailable
+        _submitState.value = state.nextStepIsAvailable
         if (state.subData?.name == null) config.inputView.placeSearchText.text = ""
         if (state.subData == null) return
         if (state.subData.name != null) config.inputView.placeSearchText.text = state.subData.name

@@ -7,32 +7,32 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import net.arwix.location.data.LocationCreateEditRepository
 import net.arwix.location.domain.LocationGeocoderUseCase
+import net.arwix.location.edit.data.LocationCreateEditRepository
 import net.arwix.mvi.StateViewModel
 
 class LocationPositionViewModel(
-    private val repository: LocationCreateEditRepository,
+    private val editRepository: LocationCreateEditRepository,
     private val locationGeocoderUseCase: LocationGeocoderUseCase
 ) :
     StateViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>() {
 
     override var internalViewState =
         LocationPositionState(
-            subData = repository.locationData.value,
-            nextStepAvailable = repository.locationData.value?.let { true } ?: false
+            subData = editRepository.locationData.value,
+            nextStepIsAvailable = editRepository.locationData.value?.let { true } ?: false
         )
 
 
     init {
         viewModelScope.launch {
-            repository.isNewData.asFlow().collect {
+            editRepository.isNewData.asFlow().collect {
                 if (it) nextResult(LocationPositionResult.InitData(null))
             }
         }
         viewModelScope.launch {
-            repository.isEditData.asFlow().collect {
-                repository.locationData.value?.run {
+            editRepository.isEditData.asFlow().collect {
+                editRepository.locationData.value?.run {
                     nextResult(LocationPositionResult.InitData(this))
                 }
             }
@@ -89,7 +89,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = true,
                     subData = result.subData,
-                    nextStepAvailable = result.subData?.let { true } ?: false,
+                    nextStepIsAvailable = result.subData?.let { true } ?: false,
                     error = null
                 )
             }
@@ -97,7 +97,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = true,
                     subData = result.subData,
-                    nextStepAvailable = true,
+                    nextStepIsAvailable = true,
                     error = null
                 )
             }
@@ -105,7 +105,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
                     subData = result.subData,
-                    nextStepAvailable = true,
+                    nextStepIsAvailable = true,
                     error = null
                 )
             }
@@ -114,7 +114,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = true,
                     subData = result.subData,
-                    nextStepAvailable = true,
+                    nextStepIsAvailable = true,
                     error = null
                 )
             }
@@ -123,7 +123,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
                     subData = result.subData,
-                    nextStepAvailable = true,
+                    nextStepIsAvailable = true,
                     error = null
                 )
             }
@@ -132,7 +132,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
                     subData = result.subData,
-                    nextStepAvailable = true,
+                    nextStepIsAvailable = true,
                     error = LocationPositionState.ErrorState.Geocoder
                 )
             }
@@ -141,7 +141,7 @@ class LocationPositionViewModel(
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
                     subData = null,
-                    nextStepAvailable = false,
+                    nextStepIsAvailable = false,
                     error = LocationPositionState.ErrorState.Input(
                         result.latitude,
                         result.longitude
@@ -158,7 +158,7 @@ class LocationPositionViewModel(
                 )
             }
         }
-        repository.locationData.postValue(state.subData)
+        editRepository.locationData.postValue(state.subData)
         return state
     }
 }

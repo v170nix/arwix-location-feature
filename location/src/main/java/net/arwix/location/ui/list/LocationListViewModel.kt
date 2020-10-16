@@ -7,12 +7,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectIndexed
 import net.arwix.location.LocationZoneIdSelectedDatabase
 import net.arwix.location.data.GeocoderRepository
-import net.arwix.location.data.LocationCreateEditRepository
 import net.arwix.location.data.LocationZoneId
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.domain.LocationHelper
 import net.arwix.location.domain.LocationPermissionHelper
+import net.arwix.location.edit.data.LocationCreateEditRepository
 import net.arwix.mvi.SimpleIntentViewModel
 import org.threeten.bp.ZoneId
 

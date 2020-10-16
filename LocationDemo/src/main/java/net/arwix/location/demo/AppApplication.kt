@@ -7,11 +7,11 @@ import androidx.room.Room
 import com.jakewharton.threetenabp.AndroidThreeTen
 import net.arwix.location.LocationZoneIdSelectedDatabase
 import net.arwix.location.data.GeocoderRepository
-import net.arwix.location.data.LocationCreateEditRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDatabase
 import net.arwix.location.domain.LocationGeocoderUseCase
+import net.arwix.location.edit.data.LocationCreateEditRepository
 import net.arwix.location.export.createLocationListFactory
 import net.arwix.location.export.createLocationPositionFactory
 import net.arwix.location.export.createLocationZoneFactory
