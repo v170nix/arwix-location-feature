@@ -47,7 +47,7 @@ class LocationPositionFragment : Fragment(), CoroutineScope by MainScope() {
         )
         lifecycle.addObserver(positionFeature)
         launch {
-            positionFeature.nextStepAvailableAsFlow().collect {
+            positionFeature.submitState.collect {
                 location_next_button.isEnabled = it
             }
         }

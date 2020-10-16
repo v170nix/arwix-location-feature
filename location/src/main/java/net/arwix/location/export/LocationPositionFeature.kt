@@ -23,11 +23,7 @@ import kotlinx.android.synthetic.main.merge_location_position_input_layout.view.
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import net.arwix.extension.*
 import net.arwix.location.R
@@ -52,9 +48,9 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
     )
 
     private lateinit var config: Config
-    private var broadcastNextStepChannel: BroadcastChannel<Boolean> = ConflatedBroadcastChannel()
     private lateinit var model: LocationPositionViewModel
-    private val markerChannel = Channel<Pair<LatLng, CameraPosition?>>(Channel.CONFLATED)
+    private var markerStateFlow: MutableStateFlow<Pair<LatLng, CameraPosition?>?> =
+        MutableStateFlow(null)
     private var googleMap: GoogleMap? = null
     private val placeFields = listOf(
         Place.Field.ID,
@@ -63,6 +59,9 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         Place.Field.ADDRESS_COMPONENTS,
         Place.Field.ADDRESS
     )
+
+    private val _submitState = MutableStateFlow(false)
+    val submitState: StateFlow<Boolean> = _submitState
 
     fun setup(config: Config, fragment: Fragment) {
         this.config = config
@@ -105,7 +104,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         }
         config.mapFragment.getMapAsync(this)
 
-        val googleLogo = config.mapFragment.view!!.findViewWithTag<View>("GoogleWatermark")
+        val googleLogo = config.mapFragment.requireView().findViewWithTag<View>("GoogleWatermark")
         val glLayoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
         glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
         glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0)
@@ -115,22 +114,18 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         googleLogo.layoutParams = glLayoutParams
     }
 
-    fun nextStepAvailableAsFlow() = broadcastNextStepChannel.openSubscription().consumeAsFlow()
-
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
         model = ViewModelProvider(
             config.modelStoreOwner,
             config.locationPositionFactory
         ).get(LocationPositionViewModel::class.java)
-        model.liveState.observe(config.lifecycleOwner, this::render)
+        model.state.observe(config.lifecycleOwner, Observer(::render))
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
-        markerChannel.close()
         googleMap = null
-        broadcastNextStepChannel.cancel()
         cancel()
     }
 
@@ -151,21 +146,22 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
                     config.inputView.longitudeInputLayout.error = null
             }
         }
-        broadcastNextStepChannel.offer(state.nextStepAvailable)
-        if (state.data?.name == null) config.inputView.placeSearchText.text = ""
-        if (state.data == null) return
-        if (state.data.name != null) config.inputView.placeSearchText.text = state.data.name
+        _submitState.value = state.nextStepAvailable
+        if (state.subData?.name == null) config.inputView.placeSearchText.text = ""
+        if (state.subData == null) return
+        if (state.subData.name != null) config.inputView.placeSearchText.text = state.subData.name
 
         config.inputView.latitudeInputLayout.apply {
             error = null
-            editText?.setText(state.data.latLng.latitude.toString())
+            editText?.setText(state.subData.latLng.latitude.toString())
         }
         config.inputView.longitudeInputLayout.apply {
             error = null
-            editText?.setText(state.data.latLng.longitude.toString())
+            editText?.setText(state.subData.latLng.longitude.toString())
         }
         if (state.updateMapAfterChangeLocation) {
-            markerChannel.offer(state.data.latLng to state.data.cameraPosition)
+            markerStateFlow.value = state.subData.latLng to state.subData.cameraPosition
+//            markerChannel.offer(state.subData.latLng to state.subData.cameraPosition)
         }
     }
 
@@ -173,7 +169,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         checkPlace(requestCode, resultCode, data)
             ?.getPlaceInResult()
             ?.run {
-                model.intent(
+                model.nextLatestAction(
                     LocationPositionAction.ChangeFromPlace(this, getCameraPosition(latLng))
                 )
             }
@@ -184,7 +180,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         map.setOnMapClickListener { latLng ->
             launch {
                 googleMap?.run {
-                    model.intent(
+                    model.nextLatestAction(
                         LocationPositionAction.ChangeFromMap(
                             latLng,
                             this.cameraPosition
@@ -199,8 +195,10 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
             }
         }
 
-        launch {
-            markerChannel.consumeEach { (latLng, position) ->
+
+        markerStateFlow
+            .filterNotNull()
+            .onEach { (latLng, position) ->
                 googleMap?.run {
                     clear()
                     addMarker(MarkerOptions().position(latLng))
@@ -220,14 +218,14 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
                         ))
                 }
             }
-        }
+            .launchIn(this)
     }
 
     private fun actionFromInput() {
         val lat = config.inputView.latitudeInputLayout.editText?.text.toString().toDoubleOrNull()
         val lng = config.inputView.longitudeInputLayout.editText?.text.toString().toDoubleOrNull()
         val latLng = if (lat != null && lng != null) LatLng(lat, lng) else null
-        model.intent(
+        model.nextLatestAction(
             LocationPositionAction.ChangeFromInput(
                 lat,
                 lng,

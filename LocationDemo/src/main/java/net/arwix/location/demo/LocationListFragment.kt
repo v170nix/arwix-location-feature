@@ -76,7 +76,7 @@ class LocationListFragment : Fragment(), CoroutineScope by MainScope() {
             }
         }
         launch {
-            locationListFeature.getSelectAvailableAsFollow().collect {
+            locationListFeature.submitState.collect {
                 refButton.get()?.run {
                     isEnabled = it
                 }

@@ -28,6 +28,7 @@ class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
             LocationZoneFeature.Config(
                 modelStoreOwner = this,
                 lifecycleOwner = this,
+                fragmentManager = parentFragmentManager,
                 locationZoneFactory = (requireContext().applicationContext as AppApplication).getLocationZoneFactory()
             )
         )
@@ -53,7 +54,7 @@ class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
             adapter = locationZoneFeature.getAdapter()
         }
         launch {
-            locationZoneFeature.submitAvailableAsFlow().collect {
+            locationZoneFeature.submitState.collect {
                 location_next_button.isEnabled = it
             }
         }

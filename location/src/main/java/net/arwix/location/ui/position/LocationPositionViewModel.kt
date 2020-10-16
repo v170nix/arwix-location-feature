@@ -1,25 +1,25 @@
 package net.arwix.location.ui.position
 
-import androidx.lifecycle.LiveDataScope
 import androidx.lifecycle.asFlow
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import net.arwix.location.data.LocationCreateEditRepository
 import net.arwix.location.domain.LocationGeocoderUseCase
-import net.arwix.mvi.SimpleIntentViewModel
+import net.arwix.mvi.StateViewModel
 
 class LocationPositionViewModel(
     private val repository: LocationCreateEditRepository,
     private val locationGeocoderUseCase: LocationGeocoderUseCase
 ) :
-    SimpleIntentViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>() {
+    StateViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>() {
 
     override var internalViewState =
         LocationPositionState(
-            data = repository.locationData.value,
+            subData = repository.locationData.value,
             nextStepAvailable = repository.locationData.value?.let { true } ?: false
         )
 
@@ -27,73 +27,76 @@ class LocationPositionViewModel(
     init {
         viewModelScope.launch {
             repository.isNewData.asFlow().collect {
-                if (it) notificationFromObserver(LocationPositionResult.InitData(null))
+                if (it) nextResult(LocationPositionResult.InitData(null))
             }
         }
         viewModelScope.launch {
             repository.isEditData.asFlow().collect {
                 repository.locationData.value?.run {
-                    notificationFromObserver(LocationPositionResult.InitData(this))
+                    nextResult(LocationPositionResult.InitData(this))
                 }
             }
         }
     }
 
-    override fun dispatchAction(action: LocationPositionAction) =
-        liveData<LocationPositionResult> {
-            action.dispatch(this)
-        }
-
-    private suspend fun LocationPositionAction.dispatch(
-        scope: LiveDataScope<LocationPositionResult>
-    ) {
-        return when (this) {
+    override suspend fun dispatchAction(
+        action: LocationPositionAction
+    ): Flow<LocationPositionResult> = flow {
+        when (action) {
             is LocationPositionAction.Init -> {
-                scope.emit(LocationPositionResult.InitData(internalViewState.data))
+                emit(LocationPositionResult.InitData(internalViewState.subData))
             }
             is LocationPositionAction.ChangeFromPlace -> {
-                if (place.latLng == null)
-                    scope.emit(LocationPositionResult.ErrorPlaceLatLng(place))
+                if (action.place.latLng == null)
+                    emit(LocationPositionResult.ErrorPlaceLatLng(action.place))
                 else
-                    scope.emit(LocationPositionResult.SuccessPlace(place, cameraPosition))
+                    emit(LocationPositionResult.SuccessPlace(action.place, action.cameraPosition))
             }
             is LocationPositionAction.ChangeFromMap -> {
-                scope.emit(LocationPositionResult.ProgressGeocoderFromMap(latLng, cameraPosition))
-                locationGeocoderUseCase.geocode(scope, latLng, cameraPosition)
+                emit(
+                    LocationPositionResult.ProgressGeocoderFromMap(
+                        action.latLng,
+                        action.cameraPosition
+                    )
+                )
+                locationGeocoderUseCase.geocode(this, action.latLng, action.cameraPosition)
             }
             is LocationPositionAction.ChangeFromInput -> {
-                if (latitude == null || latitude < -90.0 || latitude > 90.0 ||
-                    longitude == null || longitude < -180.0 || longitude > 180.0
+                if (action.latitude == null || action.latitude < -90.0 || action.latitude > 90.0 ||
+                    action.longitude == null || action.longitude < -180.0 || action.longitude > 180.0
                 ) {
-                    scope.emit(LocationPositionResult.ErrorInput(latitude, longitude))
+                    emit(LocationPositionResult.ErrorInput(action.latitude, action.longitude))
                 } else {
-                    val latLng = LatLng(latitude, longitude)
-                    scope.emit(
+                    val latLng = LatLng(action.latitude, action.longitude)
+                    emit(
                         LocationPositionResult.ProgressGeocoderFromInput(
                             latLng,
-                            cameraPosition
+                            action.cameraPosition
                         )
                     )
-                    locationGeocoderUseCase.geocode(scope, latLng, cameraPosition)
+                    locationGeocoderUseCase.geocode(this, latLng, action.cameraPosition)
                 }
             }
         }
     }
 
-    override fun reduce(result: LocationPositionResult): LocationPositionState {
+    override suspend fun reduce(
+        state: LocationPositionState,
+        result: LocationPositionResult
+    ): LocationPositionState {
         val state = when (result) {
             is LocationPositionResult.InitData -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = true,
-                    data = result.data,
-                    nextStepAvailable = result.data?.let { true } ?: false,
+                    subData = result.subData,
+                    nextStepAvailable = result.subData?.let { true } ?: false,
                     error = null
                 )
             }
             is LocationPositionResult.SuccessPlace -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = true,
-                    data = result.data,
+                    subData = result.subData,
                     nextStepAvailable = true,
                     error = null
                 )
@@ -101,7 +104,7 @@ class LocationPositionViewModel(
             is LocationPositionResult.ProgressGeocoderFromMap -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
-                    data = result.data,
+                    subData = result.subData,
                     nextStepAvailable = true,
                     error = null
                 )
@@ -110,7 +113,7 @@ class LocationPositionViewModel(
             is LocationPositionResult.ProgressGeocoderFromInput -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = true,
-                    data = result.data,
+                    subData = result.subData,
                     nextStepAvailable = true,
                     error = null
                 )
@@ -119,7 +122,7 @@ class LocationPositionViewModel(
             is LocationPositionResult.SuccessGeocoder -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
-                    data = result.data,
+                    subData = result.subData,
                     nextStepAvailable = true,
                     error = null
                 )
@@ -128,7 +131,7 @@ class LocationPositionViewModel(
             is LocationPositionResult.ErrorGeocoder -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
-                    data = result.data,
+                    subData = result.subData,
                     nextStepAvailable = true,
                     error = LocationPositionState.ErrorState.Geocoder
                 )
@@ -137,7 +140,7 @@ class LocationPositionViewModel(
             is LocationPositionResult.ErrorInput -> {
                 internalViewState.copy(
                     updateMapAfterChangeLocation = false,
-                    data = null,
+                    subData = null,
                     nextStepAvailable = false,
                     error = LocationPositionState.ErrorState.Input(
                         result.latitude,
@@ -155,8 +158,7 @@ class LocationPositionViewModel(
                 )
             }
         }
-        repository.locationData.value = state.data
+        repository.locationData.postValue(state.subData)
         return state
     }
-
 }

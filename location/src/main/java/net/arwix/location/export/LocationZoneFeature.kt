@@ -1,11 +1,13 @@
 package net.arwix.location.export
 
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import net.arwix.location.ui.zone.LocationZoneAction
 import net.arwix.location.ui.zone.LocationZoneAdapter
 import net.arwix.location.ui.zone.LocationZoneState
@@ -18,12 +20,15 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
     private lateinit var model: LocationZoneViewModel
     private lateinit var adapter: LocationZoneAdapter
     private var isSelected = false
-    private var broadcastSubmitChannel: BroadcastChannel<Boolean> = ConflatedBroadcastChannel()
+
+    private val _submitState = MutableStateFlow(false)
+    val submitState: StateFlow<Boolean> = _submitState
 
     data class Config(
         val modelStoreOwner: ViewModelStoreOwner,
         val lifecycleOwner: LifecycleOwner,
         val locationZoneFactory: ViewModelProvider.Factory,
+        val fragmentManager: FragmentManager,
         val timeZoneInstant: Instant = Instant.now()
     )
 
@@ -47,13 +52,10 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
-        broadcastSubmitChannel.cancel()
         cancel()
     }
 
     fun getAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder> = adapter
-
-    fun submitAvailableAsFlow() = broadcastSubmitChannel.openSubscription().consumeAsFlow()
 
     suspend fun doSubmitLocation() {
         model.submit()
@@ -66,10 +68,7 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
         state.autoZone?.also { autoZone ->
             adapter.setAutoState(autoZone, state.selectZoneId == null)
         }
-        launch {
-            delay(100)
-            broadcastSubmitChannel.send(state.finishStepAvailable)
-        }
+        _submitState.value = state.finishStepAvailable
         val selected = state.selectZoneId ?: return
         isSelected = true
         if (selected.fromAuto) {

@@ -33,7 +33,7 @@ class AppApplication : Application() {
             )
         )
         val editRepository =
-            LocationCreateEditRepository(db.recordDao(), locationZoneIdSelectedDatabase)
+            LocationCreateEditRepository(db.recordDao())
         val geocoderRepository = GeocoderRepository(this)
         val geocoderUseCase = LocationGeocoderUseCase(geocoderRepository)
         val timeZoneRepository = TimeZoneRepository(this)

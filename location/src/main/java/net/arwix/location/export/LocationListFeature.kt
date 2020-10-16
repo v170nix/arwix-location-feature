@@ -5,10 +5,8 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import net.arwix.extension.getThemeColor
 import net.arwix.extension.runWeak
@@ -38,7 +36,9 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
     private lateinit var config: Config
     private lateinit var model: LocationListViewModel
     private lateinit var adapter: LocationListAdapter
-    private var broadcastSubmitChannel: BroadcastChannel<Boolean> = ConflatedBroadcastChannel()
+
+    private val _submitState = MutableStateFlow(false)
+    val submitState: StateFlow<Boolean> = _submitState
 
     fun setup(config: Config, fragment: Fragment) {
         this.config = config
@@ -89,15 +89,10 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
-        broadcastSubmitChannel.cancel()
         cancel()
     }
 
     suspend fun commitSelectedItem() = model.commitSelectedItem()
-
-    fun getSelectAvailableAsFollow(): Flow<Boolean> {
-        return broadcastSubmitChannel.openSubscription().consumeAsFlow()
-    }
 
     fun getAdapter() = adapter
 
@@ -135,10 +130,10 @@ class LocationListFeature : LifecycleObserver, CoroutineScope by MainScope() {
         }
         if (state.selectedItem != null) {
             adapter.select(state.selectedItem.data, state.selectedItem.isAuto)
-            broadcastSubmitChannel.offer(true)
+            _submitState.value = true
         } else {
             adapter.deselect()
-            broadcastSubmitChannel.offer(false)
+            _submitState.value = false
         }
     }
 

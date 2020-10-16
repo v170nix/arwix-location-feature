@@ -2,11 +2,11 @@ package net.arwix.location.ui.position
 
 
 import com.google.android.libraries.places.api.model.Place
-import net.arwix.location.data.FeatureLocationData
+import net.arwix.location.data.EditLocationSubData
 
 data class LocationPositionState(
     val updateMapAfterChangeLocation: Boolean = false,
-    val data: FeatureLocationData? = null,
+    val subData: EditLocationSubData? = null,
     val nextStepAvailable: Boolean = false,
     val error: ErrorState? = null
 ) {
