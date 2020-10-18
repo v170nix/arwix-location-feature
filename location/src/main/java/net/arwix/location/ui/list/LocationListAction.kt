@@ -2,18 +2,49 @@ package net.arwix.location.ui.list
 
 import android.app.Activity
 import net.arwix.location.data.room.LocationTimeZoneData
+import net.arwix.mvi.StateViewModel
+import net.arwix.mvi.StateViewModel.ActionType
 import java.lang.ref.WeakReference
 
-sealed class LocationListAction {
-    data class CheckPermission(val refActivity: WeakReference<Activity>? = null) :
-        LocationListAction()
+sealed class LocationListAction : StateViewModel.Action() {
+    data class CheckPermission(
+        val refActivity: WeakReference<Activity>? = null,
+        override val type: ActionType = ActionType.Sync
+    ) : LocationListAction()
 
-    object GetAutoLocation : LocationListAction()
-    object UpdateAutoLocation : LocationListAction()
-    object CancelUpdateAutoLocation : LocationListAction()
-    data class DeleteItem(val item: LocationTimeZoneData) : LocationListAction()
-    data class EditItem(val item: LocationTimeZoneData) : LocationListAction()
-    object AddItem : LocationListAction()
-    data class SelectFromCustomList(val data: LocationTimeZoneData) : LocationListAction()
-    data class SelectFormAuto(val data: LocationTimeZoneData) : LocationListAction()
+    object GetAutoLocation : LocationListAction() {
+        override val type: ActionType = ActionType.Sync
+    }
+
+    object UpdateAutoLocation : LocationListAction() {
+        override val type: ActionType = ActionType.Sync
+    }
+
+    object CancelUpdateAutoLocation : LocationListAction() {
+        override val type: ActionType get() = ActionType.Sync
+    }
+
+    data class DeleteItem(
+        val item: LocationTimeZoneData,
+        override val type: ActionType = ActionType.Sync
+    ) : LocationListAction()
+
+    data class EditItem(
+        val item: LocationTimeZoneData,
+        override val type: ActionType = ActionType.Sync
+    ) : LocationListAction()
+
+    object AddItem : LocationListAction() {
+        override val type: ActionType get() = ActionType.Sync
+    }
+
+    data class SelectFromCustomList(
+        val data: LocationTimeZoneData,
+        override val type: ActionType = ActionType.Latest
+    ) : LocationListAction()
+
+    data class SelectFormAuto(
+        val data: LocationTimeZoneData,
+        override val type: ActionType = ActionType.Latest
+    ) : LocationListAction()
 }

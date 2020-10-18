@@ -51,20 +51,20 @@ abstract class LocationListFragment : Fragment() {
                 lifecycleScope.launch {
                     if (!LocationSettingHelper.check(this@LocationListFragment)) {
                         if (isRemoving || isDetached) return@launch
-                        model.nonCancelableIntent(LocationListAction.UpdateAutoLocation)
+                        model.nextSyncAction(LocationListAction.UpdateAutoLocation)
                     }
                 }
             },
             onSelectedListener = { item, isAuto ->
-                if (isAuto) model.intent(LocationListAction.SelectFormAuto(item))
-                else model.intent(LocationListAction.SelectFromCustomList(item))
+                if (isAuto) model.nextLatestAction(LocationListAction.SelectFormAuto(item))
+                else model.nextLatestAction(LocationListAction.SelectFromCustomList(item))
             },
             onEditListener = {
-                model.nonCancelableIntent(LocationListAction.EditItem(it))
+                model.nextSyncAction(LocationListAction.EditItem(it))
                 navigateToEditItemFragment()
             },
             onDeleteListener = {
-                model.nonCancelableIntent(LocationListAction.DeleteItem(it))
+                model.nextSyncAction(LocationListAction.DeleteItem(it))
             }
         )
     }
@@ -75,7 +75,7 @@ abstract class LocationListFragment : Fragment() {
             config.modelStoreOwner,
             config.locationMainFactory
         ).get(LocationListViewModel::class.java)
-        model.liveState.observe(this, Observer(::render))
+        model.state.observe(this, Observer(::render))
     }
 
     suspend fun commitSelectedItem() = model.commitSelectedItem()
@@ -85,18 +85,18 @@ abstract class LocationListFragment : Fragment() {
     abstract fun navigateToEditItemFragment()
 
     fun doAddLocation() {
-        model.nonCancelableIntent(LocationListAction.AddItem)
+        model.nextSyncAction(LocationListAction.AddItem)
     }
 
     fun doActivityResult(requestCode: Int, resultCode: Int) {
         if (LocationSettingHelper.onActivityResult(requestCode, resultCode)) {
-            model.nonCancelableIntent(LocationListAction.UpdateAutoLocation)
+            model.nextSyncAction(LocationListAction.UpdateAutoLocation)
         }
     }
 
     fun doRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
         if (LocationPermissionHelper.onRequestPermissionsResult(requestCode, grantResults)) {
-            model.nonCancelableIntent(LocationListAction.GetAutoLocation)
+            model.nextSyncAction(LocationListAction.GetAutoLocation)
         }
     }
 

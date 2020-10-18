@@ -2,7 +2,6 @@ package net.arwix.location.ui.list
 
 import android.location.Address
 import android.location.Location
-import androidx.lifecycle.LiveDataScope
 import com.google.android.gms.maps.model.LatLng
 import net.arwix.location.data.getSubTitle
 import net.arwix.location.data.getTitle
@@ -10,10 +9,6 @@ import net.arwix.location.data.room.LocationTimeZoneData
 import org.threeten.bp.ZoneId
 
 sealed class LocationListResult {
-
-    suspend fun emitTo(scope: LiveDataScope<LocationListResult>) {
-        scope.emit(this)
-    }
 
     object PermissionGranted : LocationListResult()
     data class PermissionDenied(val shouldRationale: Boolean) : LocationListResult()

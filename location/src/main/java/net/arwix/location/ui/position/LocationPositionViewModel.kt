@@ -1,12 +1,17 @@
 package net.arwix.location.ui.position
 
+import android.util.Log
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import net.arwix.location.domain.LocationGeocoderUseCase
 import net.arwix.location.edit.data.LocationCreateEditRepository
 import net.arwix.mvi.StateViewModel
@@ -16,6 +21,8 @@ class LocationPositionViewModel(
     private val locationGeocoderUseCase: LocationGeocoderUseCase
 ) :
     StateViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>() {
+
+    private var geocodeJob: Job? = null
 
     override var internalViewState =
         LocationPositionState(
@@ -47,6 +54,7 @@ class LocationPositionViewModel(
                 emit(LocationPositionResult.InitData(internalViewState.subData))
             }
             is LocationPositionAction.ChangeFromPlace -> {
+                geocodeJob?.cancel()
                 if (action.place.latLng == null)
                     emit(LocationPositionResult.ErrorPlaceLatLng(action.place))
                 else
@@ -59,9 +67,12 @@ class LocationPositionViewModel(
                         action.cameraPosition
                     )
                 )
-                locationGeocoderUseCase.geocode(this, action.latLng, action.cameraPosition)
+                yield()
+                requestGeocode(action.latLng, action.cameraPosition)
+                Log.e("error!!", "3")
             }
             is LocationPositionAction.ChangeFromInput -> {
+                geocodeJob?.cancel()
                 if (action.latitude == null || action.latitude < -90.0 || action.latitude > 90.0 ||
                     action.longitude == null || action.longitude < -180.0 || action.longitude > 180.0
                 ) {
@@ -74,8 +85,17 @@ class LocationPositionViewModel(
                             action.cameraPosition
                         )
                     )
-                    locationGeocoderUseCase.geocode(this, latLng, action.cameraPosition)
+                    requestGeocode(latLng, action.cameraPosition)
                 }
+            }
+        }
+    }
+
+    private fun requestGeocode(latLng: LatLng, cameraPosition: CameraPosition?) {
+        geocodeJob?.cancel()
+        geocodeJob = viewModelScope.launch(Dispatchers.IO) {
+            locationGeocoderUseCase.geocode(latLng, cameraPosition).collect {
+                nextResult(it)
             }
         }
     }

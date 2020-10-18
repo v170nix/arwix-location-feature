@@ -22,15 +22,15 @@ class LocationCreateEditRepository(
     val isEditData: LiveData<LocationTimeZoneData> = _isEditData
 
     fun create() {
-        locationData.value = null
-        timeZoneData.value = null
-        _isEditData.value = null
-        _isNewData.value = true
+        locationData.postValue(null)
+        timeZoneData.postValue(null)
+        _isEditData.postValue(null)
+        _isNewData.postValue(true)
     }
 
     fun edit(data: LocationTimeZoneData) {
-        timeZoneData.value = data.zone
-        locationData.value = EditLocationSubData(data.name,
+        timeZoneData.postValue(data.zone)
+        locationData.postValue(EditLocationSubData(data.name,
             data.subName,
             data.latLng,
             CameraPosition.builder()
@@ -39,9 +39,9 @@ class LocationCreateEditRepository(
                 .apply { data.tilt?.run(::tilt) }
                 .apply { data.bearing?.run(::bearing) }
                 .build()
-        )
-        _isNewData.value = false
-        _isEditData.value = data
+        ))
+        _isNewData.postValue(false)
+        _isEditData.postValue(data)
     }
 
     suspend fun submit() {
