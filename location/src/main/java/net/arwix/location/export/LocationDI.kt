@@ -25,8 +25,7 @@ fun createLocationListFactory(
     return object : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             return LocationListViewModel(
-                applicationContext,
-                locationSelectedDatabase, dao, editRepository, geocoderRepository
+                applicationContext, dao, editRepository, geocoderRepository
             ) as T
         }
     }

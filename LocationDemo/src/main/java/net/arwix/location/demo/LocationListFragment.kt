@@ -12,33 +12,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_location_list.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import net.arwix.location.export.LibLocationListFragment
+import net.arwix.location.export.LocationListFragment
 import java.lang.ref.WeakReference
 
-class LocationListFragment : LibLocationListFragment() {
+class LocationListFragment : LocationListFragment() {
 
 //    private lateinit var locationListFeature: LocationListFeature
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-//        locationListFeature = LocationListFeature()
         setup(
             Config(
                 modelStoreOwner = this,
                 locationMainFactory = (requireContext().applicationContext as AppApplication).getLocationListFactory(),
-                colorOnSecondary = 0xFF000000.toInt(),
-                gotoEditFragment = {
-                    requireActivity().supportFragmentManager.beginTransaction()
-                        .replace(
-                            R.id.fragment_container,
-                            LocationPositionFragment::class.java, null
-                        )
-                        .addToBackStack(null)
-                        .commit()
-                }
-            ), this
+                colorOnSecondary = 0xFF000000.toInt()
+            )
         )
-//        lifecycle.addObserver(locationListFeature)
     }
 
     override fun onCreateView(
@@ -78,6 +67,16 @@ class LocationListFragment : LibLocationListFragment() {
                 }
             }
         }
+    }
+
+    override fun navigateToEditItemFragment() {
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.fragment_container,
+                LocationPositionFragment::class.java, null
+            )
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

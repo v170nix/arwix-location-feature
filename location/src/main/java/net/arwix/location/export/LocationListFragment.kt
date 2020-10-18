@@ -100,7 +100,6 @@ abstract class LocationListFragment : Fragment() {
         }
     }
 
-
     private fun render(state: LocationListState) {
         when (state.autoLocationPermission) {
             LocationListState.LocationPermission.Denied -> adapter.setAutoState(
@@ -124,6 +123,5 @@ abstract class LocationListFragment : Fragment() {
             _submitState.value = false
         }
     }
-
 
 }

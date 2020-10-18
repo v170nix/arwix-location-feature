@@ -7,14 +7,17 @@ import org.threeten.bp.ZoneId
 @Entity(tableName = "location_tz_table")
 @TypeConverters(LocationTimeZoneData.ZoneConverters::class)
 data class LocationTimeZoneData(
-    @PrimaryKey(autoGenerate = true) var id: Int?,
-    var name: String?,
-    @ColumnInfo(name = "sub_name") var subName: String?,
-    @ColumnInfo(name = "lat_lng") var latLng: LatLng,
-    var zone: ZoneId,
-    var zoom: Float? = null,
-    var bearing: Float? = null,
-    var tilt: Float? = null
+    @PrimaryKey(autoGenerate = true) val id: Int?,
+    val name: String?,
+    @ColumnInfo(name = "sub_name") val subName: String?,
+    @ColumnInfo(name = "lat_lng") val latLng: LatLng,
+    val altitude: Double = 0.0,
+    val zone: ZoneId,
+    val zoom: Float? = null,
+    val bearing: Float? = null,
+    val tilt: Float? = null,
+    val isSelected: Boolean = false,
+    val isAuto: Boolean = false
 ) {
     internal class ZoneConverters {
 

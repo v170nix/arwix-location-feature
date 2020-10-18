@@ -1,11 +1,14 @@
 package net.arwix.location.ui.list
 
 import android.content.Context
-import androidx.lifecycle.*
+import android.location.Location
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataScope
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectIndexed
-import net.arwix.location.LocationZoneIdSelectedDatabase
 import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.data.LocationZoneId
 import net.arwix.location.data.room.LocationDao
@@ -18,7 +21,7 @@ import org.threeten.bp.ZoneId
 
 class LocationListViewModel(
     private val applicationContext: Context,
-    private val selectedDatabase: LocationZoneIdSelectedDatabase,
+//    private val selectedDatabase: LocationZoneIdSelectedDatabase,
     private val dao: LocationDao,
     private val editRepository: LocationCreateEditRepository,
     private val geocoderRepository: GeocoderRepository
@@ -29,26 +32,30 @@ class LocationListViewModel(
 
     init {
         viewModelScope.launch {
-            dao.getAll().asFlow().collectIndexed { index, list: List<LocationTimeZoneData> ->
-                if (index == 0) {
-                    initState(list)
-                } else {
-                    notificationFromObserver(LocationListResult.ManualList(list))
+            dao.getAllExceptAuto()
+                .collectIndexed { index, list: List<LocationTimeZoneData> ->
+                    if (index == 0) {
+                        initState(list)
+                    } else {
+                        notificationFromObserver(LocationListResult.ManualList(list))
+                    }
                 }
-            }
         }
     }
 
     private suspend fun initState(customList: List<LocationTimeZoneData>) {
         val permission = LocationPermissionHelper.check(applicationContext)
-        val selectedItem: LocationZoneId? = selectedDatabase.getLZData()
+        val selectedItem: LocationTimeZoneData? =
+            dao.getSelectedItem() // selectedDatabase.getLZData()
         val selected: LocationListResult.Select? = selectedItem?.run {
-            val innerData = toLocationTimeZoneData()
-            LocationListResult.Select(innerData, this is LocationZoneId.Auto)
+            val innerData = this //toLocationTimeZoneData()
+            LocationListResult.Select(innerData, this.isAuto)
+//            LocationListResult.Select(innerData, this is LocationZoneId.Auto)
         }
         val location = LocationHelper.getLocation(applicationContext, false)
         val autoItem: LocationListResult.AutoItem = run {
             if (location != null) {
+                dao.updateAutoItem(location, ZoneId.systemDefault())
                 LocationListResult.AutoItem.Success(
                     location,
                     ZoneId.systemDefault()
@@ -72,6 +79,7 @@ class LocationListViewModel(
                 ?: return@launch
             yield()
             withContext(Dispatchers.Main) {
+                dao.updateAutoItem(address)
                 notificationFromObserver(
                     LocationListResult.AutoLocation(
                         LocationListResult.AutoItem.Success(
@@ -96,6 +104,7 @@ class LocationListViewModel(
             val location = LocationHelper.getLocation(applicationContext, flagUpdate)
             if (location != null) {
                 val zoneId = ZoneId.systemDefault()
+                dao.updateAutoItem(location, ZoneId.systemDefault())
                 LocationListResult.AutoLocation(
                     LocationListResult.AutoItem.Success(
                         location,
@@ -113,6 +122,7 @@ class LocationListViewModel(
                     ).emitTo(scope)
                     return@launch
                 }
+                dao.updateAutoItem(address)
                 LocationListResult.AutoLocation(
                     if (flagUpdate) LocationListResult.AutoItem.UpdateEnd(location, zoneId, address)
                     else LocationListResult.AutoItem.Success(location, zoneId, address)
@@ -131,6 +141,10 @@ class LocationListViewModel(
         job.join()
     }
 
+    private fun updateAutoLocationToDb(location: Location, zoneId: ZoneId) {
+
+    }
+
     @Synchronized
     private fun updateLocationJobsCancel(newJob: Job? = null) {
         synchronized(this) {
@@ -141,7 +155,7 @@ class LocationListViewModel(
     }
 
     suspend fun commitSelectedItem(): Boolean {
-        internalViewState.selectedItem?.let { selectedItem ->
+        internalViewState.selectedItem?.let { selectedItem: LocationListState.SelectedItem ->
             val selectedId = selectedItem.data.id
             if (selectedId == null && !selectedItem.isAuto) return false
             val data = if (selectedItem.isAuto) {
@@ -166,7 +180,8 @@ class LocationListViewModel(
                     zoneId = item.zone
                 )
             }
-            return selectedDatabase.setLZData(data)
+//            dao.selectItem()
+            return true // selectedDatabase.setLZData(data)
         }
         return false
     }
@@ -199,10 +214,20 @@ class LocationListViewModel(
                     }
                     emit(LocationListResult.PermissionGranted)
                 }
-                is LocationListAction.SelectFormAuto ->
-                    LocationListResult.Select(action.data, true).emitTo(this)
-                is LocationListAction.SelectFromCustomList ->
-                    LocationListResult.Select(action.data, false).emitTo(this)
+                is LocationListAction.SelectFormAuto -> {
+                    action.data.copy(isSelected = true).also {
+                        dao.selectAutoItem()
+                        LocationListResult.Select(action.data, true).emitTo(this)
+                    }
+//                    LocationListResult.Select(action.data, true).emitTo(this)
+                }
+                is LocationListAction.SelectFromCustomList -> {
+                    action.data.copy(isSelected = true).also {
+                        dao.selectCustomItem(it)
+                        LocationListResult.Select(it, false).emitTo(this)
+                    }
+//                    LocationListResult.Select(action.data, false).emitTo(this)
+                }
                 is LocationListAction.DeleteItem -> {
                     action.item.id?.let {
                         dao.deleteById(it)
@@ -286,6 +311,7 @@ class LocationListViewModel(
             name,
             subName,
             LatLng(latitude, longitude),
+            0.0,
             zoneId
         )
     }

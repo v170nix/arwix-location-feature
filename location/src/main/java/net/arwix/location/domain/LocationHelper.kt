@@ -1,5 +1,6 @@
 package net.arwix.location.domain
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import com.google.android.gms.location.LocationCallback
@@ -12,11 +13,13 @@ import kotlin.coroutines.resume
 
 object LocationHelper {
 
+    @SuppressLint("MissingPermission")
     suspend fun getLastLocation(context: Context): Location? {
         val provider = LocationServices.getFusedLocationProviderClient(context)
         return runCatching { provider.lastLocation.await() }.getOrNull()
     }
 
+    @SuppressLint("MissingPermission")
     suspend fun updateOneAndGetLastLocation(context: Context): Location? {
         val provider = LocationServices.getFusedLocationProviderClient(context)
         val request = LocationRequest().apply {
