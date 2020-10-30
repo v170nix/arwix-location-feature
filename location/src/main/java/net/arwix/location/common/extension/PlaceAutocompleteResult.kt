@@ -23,6 +23,7 @@ sealed class PlaceAutocompleteResult {
 
 const val AUTOCOMPLETE_REQUEST_CODE = 278
 
+@Deprecated("deprecated startActivityForResult")
 fun Fragment.startPlace(
     fields: List<Place.Field> = listOf(
         Place.Field.ID,
