@@ -13,10 +13,10 @@ import net.arwix.extension.getThemeColor
 import net.arwix.location.R
 import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.domain.LocationSettingHelper
-import net.arwix.location.ui.list.LocationListAction
-import net.arwix.location.ui.list.LocationListAdapter
-import net.arwix.location.ui.list.LocationListState
-import net.arwix.location.ui.list.LocationListViewModel
+import net.arwix.location.list.ui.LocationListAction
+import net.arwix.location.list.ui.LocationListAdapter
+import net.arwix.location.list.ui.LocationListState
+import net.arwix.location.list.ui.LocationListViewModel
 import org.threeten.bp.Instant
 
 abstract class LocationListFragment : Fragment() {

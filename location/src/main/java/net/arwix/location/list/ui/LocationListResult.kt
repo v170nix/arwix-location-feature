@@ -1,4 +1,4 @@
-package net.arwix.location.ui.list
+package net.arwix.location.list.ui
 
 import android.location.Address
 import android.location.Location

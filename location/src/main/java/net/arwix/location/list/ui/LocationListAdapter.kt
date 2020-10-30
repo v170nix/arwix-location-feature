@@ -1,11 +1,9 @@
-package net.arwix.location.ui.list
+package net.arwix.location.list.ui
 
-import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -330,9 +328,10 @@ class LocationListAdapter(
         private val zoneSubNameView: TextView = view.location_main_item_time_zone_second
         private val zoneGmtOffsetView: TextView = view.location_main_item_time_zone_three
         private val editButton: Button = view.location_main_item_edit_button
-        private val deleteButton: ImageButton = view.location_main_item_delete_button
+        private val deleteButton: Button = view.location_main_item_delete_button
         private val layout: View = view.location_main_item_layout
-        private val defaultImageTintList: ColorStateList? = deleteButton.imageTintList
+
+        //        private val defaultImageTintList: ColorStateList? = deleteButton.tint
         private val defaultTextColors = latitudeView.textColors
 
         init {
@@ -385,7 +384,7 @@ class LocationListAdapter(
             zoneSubNameView.setTextColor(onSecondaryColor)
             zoneGmtOffsetView.setTextColor(onSecondaryColor)
             latitudeView.setTextColor(onSecondaryColor)
-            deleteButton.imageTintList = ColorStateList.valueOf(onSecondaryColor)
+//            deleteButton.imageTintList = ColorStateList.valueOf(onSecondaryColor)
         }
 
         override fun deselected() {
@@ -398,7 +397,7 @@ class LocationListAdapter(
             zoneSubNameView.setTextColor(defaultTextColors)
             zoneGmtOffsetView.setTextColor(defaultTextColors)
             latitudeView.setTextColor(defaultTextColors)
-            deleteButton.imageTintList = defaultImageTintList
+//            deleteButton.imageTintList = defaultImageTintList
         }
     }
 

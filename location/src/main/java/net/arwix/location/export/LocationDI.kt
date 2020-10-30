@@ -10,7 +10,7 @@ import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.domain.LocationGeocoderUseCase
 import net.arwix.location.edit.data.LocationCreateEditRepository
-import net.arwix.location.ui.list.LocationListViewModel
+import net.arwix.location.list.ui.LocationListViewModel
 import net.arwix.location.ui.position.LocationPositionViewModel
 import net.arwix.location.ui.zone.LocationZoneViewModel
 

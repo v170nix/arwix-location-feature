@@ -1,4 +1,4 @@
-package net.arwix.location.ui.list
+package net.arwix.location.list.ui
 
 import net.arwix.location.data.room.LocationTimeZoneData
 
