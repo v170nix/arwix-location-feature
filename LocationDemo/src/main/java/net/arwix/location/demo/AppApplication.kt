@@ -1,11 +1,9 @@
 package net.arwix.location.demo
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.jakewharton.threetenabp.AndroidThreeTen
-import net.arwix.location.LocationZoneIdSelectedDatabase
 import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
@@ -18,7 +16,6 @@ import net.arwix.location.export.createLocationZoneFactory
 
 class AppApplication : Application() {
     private lateinit var db: LocationDatabase
-    private lateinit var locationZoneIdSelectedDatabase: LocationZoneIdSelectedDatabase
     private lateinit var locationListFactory: ViewModelProvider.Factory
     private lateinit var locationPositionFactory: ViewModelProvider.Factory
     private lateinit var locationZoneFactory: ViewModelProvider.Factory
@@ -26,12 +23,6 @@ class AppApplication : Application() {
         super.onCreate()
         AndroidThreeTen.init(this)
         db = Room.databaseBuilder(this, LocationDatabase::class.java, "location-db").build()
-        locationZoneIdSelectedDatabase = AppLocationPreferencesSelected(
-            applicationContext.getSharedPreferences(
-                "location_preferences",
-                Context.MODE_PRIVATE
-            )
-        )
         val editRepository =
             LocationCreateEditRepository(db.recordDao())
         val geocoderRepository = GeocoderRepository(this)
@@ -41,7 +32,6 @@ class AppApplication : Application() {
             TimeZoneGoogleRepository("")
         locationListFactory = createLocationListFactory(
             this,
-            locationSelectedDatabase = locationZoneIdSelectedDatabase,
             dao = db.recordDao(),
             editRepository = editRepository,
             geocoderRepository = geocoderRepository
@@ -60,7 +50,6 @@ class AppApplication : Application() {
     }
 
     fun getLocationDatabase() = db
-    fun getLocationZoneIdDatabase() = locationZoneIdSelectedDatabase
 
     fun getLocationListFactory() = locationListFactory
     fun getLocationPositionFactory() = locationPositionFactory

@@ -1,6 +1,9 @@
 package net.arwix.location.export
 
+import android.Manifest
+import android.app.Activity
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -11,7 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import net.arwix.extension.getThemeColor
 import net.arwix.location.R
-import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.domain.LocationSettingHelper
 import net.arwix.location.list.ui.LocationListAction
 import net.arwix.location.list.ui.LocationListAdapter
@@ -33,6 +35,20 @@ abstract class LocationListFragment : Fragment() {
     private lateinit var config: Config
     private lateinit var model: LocationListViewModel
     private lateinit var adapter: LocationListAdapter
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                model.nextSyncAction(LocationListAction.GetAutoLocation)
+            }
+        }
+
+    private val registerSettingLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                model.nextSyncAction(LocationListAction.UpdateAutoLocation)
+            }
+        }
+
 
     private val _submitState = MutableStateFlow(false)
     val submitState: StateFlow<Boolean> = _submitState
@@ -45,14 +61,13 @@ abstract class LocationListFragment : Fragment() {
             onSecondaryColor = config.colorOnSecondary
                 ?: requireContext().getThemeColor(R.attr.colorOnSecondary),
             onRequestPermission = {
-                LocationPermissionHelper.requestPermissionRationale(this, force = true)
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             },
             onUpdateAutoLocation = {
                 lifecycleScope.launch {
-                    if (!LocationSettingHelper.check(this@LocationListFragment)) {
-                        if (isRemoving || isDetached) return@launch
-                        model.nextSyncAction(LocationListAction.UpdateAutoLocation)
-                    }
+                    val intentSenderRequest = LocationSettingHelper.check(this@LocationListFragment)
+                    if (intentSenderRequest == null || isRemoving || isDetached) return@launch
+                    registerSettingLauncher.launch(intentSenderRequest)
                 }
             },
             onSelectedListener = { item, isAuto ->
@@ -78,26 +93,12 @@ abstract class LocationListFragment : Fragment() {
         model.state.observe(this, Observer(::render))
     }
 
-    suspend fun commitSelectedItem() = model.commitSelectedItem()
-
     fun getAdapter() = adapter
 
     abstract fun navigateToEditItemFragment()
 
     fun doAddLocation() {
         model.nextSyncAction(LocationListAction.AddItem)
-    }
-
-    fun doActivityResult(requestCode: Int, resultCode: Int) {
-        if (LocationSettingHelper.onActivityResult(requestCode, resultCode)) {
-            model.nextSyncAction(LocationListAction.UpdateAutoLocation)
-        }
-    }
-
-    fun doRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
-        if (LocationPermissionHelper.onRequestPermissionsResult(requestCode, grantResults)) {
-            model.nextSyncAction(LocationListAction.GetAutoLocation)
-        }
     }
 
     private fun render(state: LocationListState) {

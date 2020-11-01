@@ -2,7 +2,6 @@ package net.arwix.location.demo
 
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -55,11 +54,11 @@ class LocationListFragment : LocationListFragment() {
                 .commit()
         }
         val refButton = WeakReference(location_main_submit_button)
-        location_main_submit_button.setOnClickListener {
-            lifecycleScope.launch {
-                commitSelectedItem()
-            }
-        }
+//        location_main_submit_button.setOnClickListener {
+//            lifecycleScope.launch {
+//                commitSelectedItem()
+//            }
+//        }
         lifecycleScope.launch {
             submitState.collect {
                 refButton.get()?.run {
@@ -77,20 +76,5 @@ class LocationListFragment : LocationListFragment() {
             )
             .addToBackStack(null)
             .commit()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        doActivityResult(requestCode, resultCode)
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        doRequestPermissionsResult(requestCode, grantResults)
     }
 }

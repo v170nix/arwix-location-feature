@@ -1,6 +1,6 @@
 package net.arwix.location.domain
 
-import android.app.Activity
+import androidx.activity.result.IntentSenderRequest
 import androidx.fragment.app.Fragment
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
@@ -15,7 +15,10 @@ object LocationSettingHelper {
 
     private const val REQUEST_SETTINGS_CODE: Int = 594
 
-    suspend fun check(fragment: Fragment, requestCode: Int = REQUEST_SETTINGS_CODE): Boolean {
+    suspend fun check(
+        fragment: Fragment,
+        requestCode: Int = REQUEST_SETTINGS_CODE
+    ): IntentSenderRequest? {
         val client = LocationServices.getSettingsClient(fragment.requireActivity())
         val weakFragment = WeakReference(fragment)
         val request = LocationRequest().apply { priority = LocationRequest.PRIORITY_HIGH_ACCURACY }
@@ -26,23 +29,11 @@ object LocationSettingHelper {
                     it as ResolvableApiException
                     //https://stackoverflow.com/questions/31235564/locationsettingsrequest-dialog-to-enable-gps-onactivityresult-skipped/39579124#39579124
                     weakFragment.get()?.run {
-                        startIntentSenderForResult(
-                            it.resolution.intentSender,
-                            requestCode,
-                            null, 0, 0, 0, null
-                        )
-                        return true
+                        return IntentSenderRequest.Builder(it.resolution.intentSender).build()
                     }
                 }
             }
-        return false
+        return null
     }
-
-    fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        locationRequestSettingCode: Int = REQUEST_SETTINGS_CODE
-    ) =
-        if (requestCode == locationRequestSettingCode) resultCode == Activity.RESULT_OK else false
 
 }
