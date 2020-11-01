@@ -2,13 +2,11 @@ package net.arwix.location.list.ui
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.flow
 import net.arwix.location.data.GeocoderRepository
-import net.arwix.location.data.LocationZoneId
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.domain.LocationHelper
@@ -154,37 +152,37 @@ class LocationListViewModel(
         }
     }
 
-    suspend fun commitSelectedItem(): Boolean {
-        internalViewState.selectedItem?.let { selectedItem: LocationListState.SelectedItem ->
-            val selectedId = selectedItem.data.id
-            if (selectedId == null && !selectedItem.isAuto) return false
-            val data = if (selectedItem.isAuto) {
-                LocationZoneId.Auto(
-                    name = selectedItem.data.name,
-                    subName = selectedItem.data.subName,
-                    latitude = selectedItem.data.latLng.latitude,
-                    longitude = selectedItem.data.latLng.longitude,
-                    altitude = 0.0,
-                    zoneId = selectedItem.data.zone
-                )
-            } else {
-                if (selectedId == null) return false
-                val item = dao.getItem(selectedId) ?: return false
-                LocationZoneId.Manual(
-                    id = selectedId,
-                    name = item.name,
-                    subName = item.subName,
-                    latitude = item.latLng.latitude,
-                    longitude = item.latLng.longitude,
-                    altitude = 0.0,
-                    zoneId = item.zone
-                )
-            }
-//            dao.selectItem()
-            return true // selectedDatabase.setLZData(data)
-        }
-        return false
-    }
+//    suspend fun commitSelectedItem(): Boolean {
+//        internalViewState.selectedItem?.let { selectedItem: LocationListState.SelectedItem ->
+//            val selectedId = selectedItem.data.id
+//            if (selectedId == null && !selectedItem.isAuto) return false
+//            val data = if (selectedItem.isAuto) {
+//                LocationZoneId.Auto(
+//                    name = selectedItem.data.name,
+//                    subName = selectedItem.data.subName,
+//                    latitude = selectedItem.data.latLng.latitude,
+//                    longitude = selectedItem.data.latLng.longitude,
+//                    altitude = 0.0,
+//                    zoneId = selectedItem.data.zone
+//                )
+//            } else {
+//                if (selectedId == null) return false
+//                val item = dao.getItem(selectedId) ?: return false
+//                LocationZoneId.Manual(
+//                    id = selectedId,
+//                    name = item.name,
+//                    subName = item.subName,
+//                    latitude = item.latLng.latitude,
+//                    longitude = item.latLng.longitude,
+//                    altitude = 0.0,
+//                    zoneId = item.zone
+//                )
+//            }
+////            dao.selectItem()
+//            return true // selectedDatabase.setLZData(data)
+//        }
+//        return false
+//    }
 
     override suspend fun dispatchAction(action: LocationListAction): Flow<LocationListResult> {
         return flow {
@@ -312,14 +310,14 @@ class LocationListViewModel(
             }
         }
 
-        private fun LocationZoneId.toLocationTimeZoneData() = LocationTimeZoneData(
-            if (this is LocationZoneId.Manual) id else null,
-            name,
-            subName,
-            LatLng(latitude, longitude),
-            0.0,
-            zoneId
-        )
+//        private fun LocationZoneId.toLocationTimeZoneData() = LocationTimeZoneData(
+//            if (this is LocationZoneId.Manual) id else null,
+//            name,
+//            subName,
+//            LatLng(latitude, longitude),
+//            0.0,
+//            zoneId
+//        )
     }
 
 }
