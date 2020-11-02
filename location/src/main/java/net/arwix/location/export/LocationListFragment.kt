@@ -3,7 +3,6 @@ package net.arwix.location.export
 import android.Manifest
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -105,18 +104,6 @@ abstract class LocationListFragment : Fragment() {
     }
 
     private fun render(state: LocationListState) {
-        Log.e("state", state.toString())
-//        when (state.autoLocationPermission) {
-//            LocationListState.LocationPermission.Denied -> adapter.setAutoState(
-//                LocationListAdapter.AutoState.Denied
-//            )
-//            LocationListState.LocationPermission.DeniedRationale -> adapter.setAutoState(
-//                LocationListAdapter.AutoState.DeniedRationale
-//            )
-//            LocationListState.LocationPermission.Allow -> adapter.setAutoState(
-//                LocationListAdapter.AutoState.Allow(state.autoLocationTimeZoneData)
-//            )
-//        }
         if (state.locationList != null) {
             val autoState = when (state.autoLocationPermission) {
                 LocationListState.LocationPermission.Denied -> LocationListAdapter.AutoState.Denied
@@ -125,24 +112,9 @@ abstract class LocationListFragment : Fragment() {
                     null
                 )
             }
-//            val selectedItem = state.locationList.find { it.isSelected }
-//            if (selectedItem != null &&
-//                (!selectedItem.isAuto || (
-//                        selectedItem.isAuto && state.autoLocationPermission is LocationListState.LocationPermission.Allow
-//                        ))
-//            )
             adapter.setData(state.locationList, autoState)
-        } else {
-            _submitState.value = false
         }
         _submitState.value = state.isSelected
-//        if (state.selectedItem != null) {
-//            adapter.select(state.selectedItem.data, state.selectedItem.isAuto)
-//            _submitState.value = true
-//        } else {
-//            adapter.deselect()
-//            _submitState.value = false
-//        }
     }
 
 }
