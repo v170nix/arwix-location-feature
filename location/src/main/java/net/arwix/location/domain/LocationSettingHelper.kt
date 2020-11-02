@@ -13,11 +13,8 @@ import java.lang.ref.WeakReference
 
 object LocationSettingHelper {
 
-    private const val REQUEST_SETTINGS_CODE: Int = 594
-
     suspend fun check(
-        fragment: Fragment,
-        requestCode: Int = REQUEST_SETTINGS_CODE
+        fragment: Fragment
     ): IntentSenderRequest? {
         val client = LocationServices.getSettingsClient(fragment.requireActivity())
         val weakFragment = WeakReference(fragment)

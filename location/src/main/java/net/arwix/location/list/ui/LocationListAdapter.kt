@@ -33,8 +33,8 @@ class LocationListAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<Item>()
-    private var selectedItem: Item? = null
-    private var autoState: AutoState = AutoState.None
+//    private var selectedItem: Item? = null
+//    private var autoState: AutoState = AutoState.None
 
     private val onEditClickListener = View.OnClickListener { v ->
         val item = v.tag as Item.Manual
@@ -48,30 +48,38 @@ class LocationListAdapter(
 
     private val onSelectedClickListener = View.OnClickListener { v ->
         val item = v.tag as Item
-        if (item == selectedItem) return@OnClickListener
         if (item is Item.Auto && item.state is AutoState.Allow && item.state.data != null) {
+            if (item.state.data.isSelected) return@OnClickListener
             onSelectedListener?.invoke(item.state.data, true)
         }
         if (item is Item.Manual) {
+            if (item.data.isSelected) return@OnClickListener
             onSelectedListener?.invoke(item.data, false)
         }
     }
 
-    fun setAutoState(newAutoState: AutoState) {
-        if (autoState == newAutoState) return
-        if (autoState is AutoState.Allow && newAutoState is AutoState.Allow) {
-            val oldLatLng = (autoState as AutoState.Allow).data?.latLng
-            val newLatLng = newAutoState.data?.latLng
-            if (oldLatLng == newLatLng && newAutoState.data?.name == null) return
-        }
-        autoState = newAutoState
-        setData(items.filterIsInstance<Item.Manual>().map { it.data }.asReversed())
-    }
+//    fun setAutoState(newAutoState: AutoState) {
+//        if (autoState == newAutoState) return
+//        if (autoState is AutoState.Allow && newAutoState is AutoState.Allow) {
+//            val oldLatLng = (autoState as AutoState.Allow).data?.latLng
+//            val newLatLng = newAutoState.data?.latLng
+//            if (oldLatLng == newLatLng && newAutoState.data?.name == null) return
+//        }
+//        autoState = newAutoState
+//        setData(items.filterIsInstance<Item.Manual>().map { it.data }.asReversed())
+//    }
 
-    fun setData(newData: List<LocationTimeZoneData>) {
+    fun setData(newData: List<LocationTimeZoneData>, autoState: AutoState) {
+        val autoItem = newData.find { it.isAuto }
+        val customData = newData.filter { !it.isAuto }
         val data = mutableListOf<Item>().apply {
-            add(Item.Auto(autoState))
-            addAll(newData.map { Item.Manual(it) }.asReversed())
+            if (autoState is AutoState.Allow && autoItem != null) {
+                add(Item.Auto(autoState.copy(autoItem)))
+            } else {
+                add(Item.Auto(autoState))
+            }
+//            add(Item.Auto(autoState))
+            addAll(customData.map { Item.Manual(it) }.asReversed())
         }
         val diffCallback = ItemDiffCallback(items, data)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
@@ -80,36 +88,36 @@ class LocationListAdapter(
         diffResult.dispatchUpdatesTo(this)
     }
 
-    fun select(item: LocationTimeZoneData, isAuto: Boolean) {
-        selectedItem?.run {
-            if (this is Item.Auto && isAuto) return
-            if (this is Item.Manual && data.id == item.id && !isAuto) return
-        }
-        items.forEachIndexed { index, entry ->
-            val f1 = entry is Item.Auto && isAuto
-            val f2 = entry is Item.Manual && entry.data.id == item.id && !isAuto
-            if (f1 || f2) {
-                deselect()
-                selectedItem = entry
-                notifyItemChanged(index)
-                return
-            }
-        }
-    }
-
-    fun deselect() {
-        selectedItem?.run {
-            items.forEachIndexed { index, entry ->
-                val f1 = entry is Item.Auto && this is Item.Auto
-                val f2 =
-                    entry is Item.Manual && this is Item.Manual && entry.data.id == this.data.id
-                if (f1 || f2) {
-                    selectedItem = null
-                    notifyItemChanged(index)
-                }
-            }
-        }
-    }
+//    fun select(item: LocationTimeZoneData, isAuto: Boolean) {
+//        selectedItem?.run {
+//            if (this is Item.Auto && isAuto) return
+//            if (this is Item.Manual && data.id == item.id && !isAuto) return
+//        }
+//        items.forEachIndexed { index, entry ->
+//            val f1 = entry is Item.Auto && isAuto
+//            val f2 = entry is Item.Manual && entry.data.id == item.id && !isAuto
+//            if (f1 || f2) {
+//                deselect()
+//                selectedItem = entry
+//                notifyItemChanged(index)
+//                return
+//            }
+//        }
+//    }
+//
+//    fun deselect() {
+//        selectedItem?.run {
+//            items.forEachIndexed { index, entry ->
+//                val f1 = entry is Item.Auto && this is Item.Auto
+//                val f2 =
+//                    entry is Item.Manual && this is Item.Manual && entry.data.id == this.data.id
+//                if (f1 || f2) {
+//                    selectedItem = null
+//                    notifyItemChanged(index)
+//                }
+//            }
+//        }
+//    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -139,8 +147,9 @@ class LocationListAdapter(
             holder as CustomLocationViewHolder
             with(holder) {
                 setTag(item)
-                if (selectedItem?.run { this is Item.Manual && item.data.id == this.data.id } == true)
-                    holder.selected() else holder.deselected()
+                if (item.data.isSelected) holder.selected() else holder.deselected()
+//                if (selectedItem?.run { this is Item.Manual && item.data.id == this.data.id } == true)
+//                    holder.selected() else holder.deselected()
                 setListeners(onSelectedClickListener, onEditClickListener, onDeleteClickListener)
                 setState(item)
             }
@@ -149,7 +158,10 @@ class LocationListAdapter(
             holder as AutoLocationViewHolder
             with(holder) {
                 setTag(item)
-                if (selectedItem?.run { this is Item.Auto } == true) holder.selected() else holder.deselected()
+                if (item.state is AutoState.Allow && item.state.data?.isSelected == true)
+                    holder.selected()
+                else holder.deselected()
+//                if (selectedItem?.run { this is Item.Auto } == true) holder.selected() else holder.deselected()
                 setListeners(onSelectedClickListener, onUpdateAutoLocation, onRequestPermission)
                 setState(item.state)
             }
@@ -431,7 +443,8 @@ class LocationListAdapter(
             return (oldItem.data.zone.id == newItem.data.zone.id &&
                     oldItem.data.latLng == newItem.data.latLng &&
                     oldItem.data.name == newItem.data.name &&
-                    oldItem.data.subName == newItem.data.subName)
+                    oldItem.data.subName == newItem.data.subName &&
+                    oldItem.data.isSelected == newItem.data.isSelected)
         }
 
     }

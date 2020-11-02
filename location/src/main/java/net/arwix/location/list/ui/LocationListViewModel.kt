@@ -17,7 +17,6 @@ import org.threeten.bp.ZoneId
 
 class LocationListViewModel(
     private val applicationContext: Context,
-//    private val selectedDatabase: LocationZoneIdSelectedDatabase,
     private val dao: LocationDao,
     private val editRepository: LocationCreateEditRepository,
     private val geocoderRepository: GeocoderRepository
@@ -28,12 +27,12 @@ class LocationListViewModel(
 
     init {
         viewModelScope.launch {
-            dao.getAllExceptAuto()
+            dao.getAll()
                 .collectIndexed { index, list: List<LocationTimeZoneData> ->
                     if (index == 0) {
                         initState(list)
                     } else {
-                        nextResult(LocationListResult.ManualList(list))
+                        nextResult(LocationListResult.LocationList(list))
                     }
                 }
         }
@@ -41,9 +40,6 @@ class LocationListViewModel(
 
     private suspend fun initState(customList: List<LocationTimeZoneData>) {
         val permission = LocationPermissionHelper.check(applicationContext)
-        val selected: LocationListResult.Select? = dao.getSelectedItem()?.run {
-            LocationListResult.Select(this, this.isAuto)
-        }
         val location = LocationHelper.getLocation(applicationContext, false)
         val autoItem: LocationListResult.AutoItem = run {
             if (location != null) {
@@ -60,8 +56,7 @@ class LocationListViewModel(
             LocationListResult.Init(
                 permission,
                 customList,
-                autoItem,
-                selected
+                autoItem
             )
         )
 
@@ -152,38 +147,6 @@ class LocationListViewModel(
         }
     }
 
-//    suspend fun commitSelectedItem(): Boolean {
-//        internalViewState.selectedItem?.let { selectedItem: LocationListState.SelectedItem ->
-//            val selectedId = selectedItem.data.id
-//            if (selectedId == null && !selectedItem.isAuto) return false
-//            val data = if (selectedItem.isAuto) {
-//                LocationZoneId.Auto(
-//                    name = selectedItem.data.name,
-//                    subName = selectedItem.data.subName,
-//                    latitude = selectedItem.data.latLng.latitude,
-//                    longitude = selectedItem.data.latLng.longitude,
-//                    altitude = 0.0,
-//                    zoneId = selectedItem.data.zone
-//                )
-//            } else {
-//                if (selectedId == null) return false
-//                val item = dao.getItem(selectedId) ?: return false
-//                LocationZoneId.Manual(
-//                    id = selectedId,
-//                    name = item.name,
-//                    subName = item.subName,
-//                    latitude = item.latLng.latitude,
-//                    longitude = item.latLng.longitude,
-//                    altitude = 0.0,
-//                    zoneId = item.zone
-//                )
-//            }
-////            dao.selectItem()
-//            return true // selectedDatabase.setLZData(data)
-//        }
-//        return false
-//    }
-
     override suspend fun dispatchAction(action: LocationListAction): Flow<LocationListResult> {
         return flow {
             when (action) {
@@ -215,31 +178,19 @@ class LocationListViewModel(
                     }
                     emit(LocationListResult.PermissionGranted)
                 }
-                is LocationListAction.SelectFormAuto -> {
-                    action.data.copy(isSelected = true).also {
-                        dao.selectAutoItem()
-                        emit(LocationListResult.Select(action.data, true))
-                    }
-//                    LocationListResult.Select(action.data, true).emitTo(this)
-                }
-                is LocationListAction.SelectFromCustomList -> {
-                    action.data.copy(isSelected = true).also {
-                        dao.selectCustomItem(it)
-                        emit(LocationListResult.Select(it, false))
-                    }
-//                    LocationListResult.Select(action.data, false).emitTo(this)
-                }
+                is LocationListAction.SelectFormAuto ->
+                    dao.selectAutoItem()
+
+                is LocationListAction.SelectFromCustomList ->
+                    dao.selectCustomItem(action.data.copy(isSelected = true))
+
                 is LocationListAction.DeleteItem -> {
                     action.item.id?.let {
                         dao.deleteById(it)
-                        if (internalViewState.selectedItem?.data?.id == it) {
-                            emit(LocationListResult.Deselect)
-                        }
                     }
                 }
                 is LocationListAction.EditItem -> editRepository.edit(action.item)
                 LocationListAction.AddItem -> editRepository.create()
-
             }
         }
     }
@@ -250,31 +201,36 @@ class LocationListViewModel(
     ): LocationListState {
         return when (result) {
             is LocationListResult.Init -> {
-                val selectedItem = result.selectedItem?.run {
-                    LocationListState.SelectedItem(item, isAuto)
-                }
                 reduceAutoLocation(result.autoItem, internalViewState).copy(
-                    customList = result.list,
-                    selectedItem = selectedItem
+                    locationList = result.list,
+                    isSelected = checkSelected(result.list, result.autoItem)
                 )
             }
-            is LocationListResult.ManualList -> {
-                internalViewState.copy(customList = result.list)
+            is LocationListResult.LocationList -> {
+                internalViewState.copy(
+                    locationList = result.list,
+                    isSelected = checkSelected(
+                        result.list,
+                        internalViewState.autoLocationPermission
+                    )
+                )
             }
-            is LocationListResult.Select -> internalViewState.copy(
-                selectedItem = LocationListState.SelectedItem(result.item, result.isAuto)
-            )
-            is LocationListResult.Deselect -> internalViewState.copy(
-                selectedItem = null
-            )
             is LocationListResult.PermissionGranted -> internalViewState.copy(
-                autoLocationPermission = LocationListState.LocationPermission.Allow
+                autoLocationPermission = LocationListState.LocationPermission.Allow,
+                isSelected = checkSelected(
+                    internalViewState.locationList,
+                    LocationListState.LocationPermission.Allow
+                )
             )
             is LocationListResult.PermissionDenied -> internalViewState.copy(
                 autoLocationPermission = if (result.shouldRationale)
                     LocationListState.LocationPermission.DeniedRationale
                 else
+                    LocationListState.LocationPermission.Denied,
+                isSelected = checkSelected(
+                    internalViewState.locationList,
                     LocationListState.LocationPermission.Denied
+                )
             )
             is LocationListResult.AutoLocation -> {
                 reduceAutoLocation(result.autoItem, internalViewState)
@@ -284,6 +240,26 @@ class LocationListViewModel(
 
     private companion object {
 
+        private fun checkSelected(
+            list: List<LocationTimeZoneData>?,
+            autoItem: LocationListResult.AutoItem
+        ): Boolean {
+            list ?: return false
+            val selectedItem = list.find { it.isSelected } ?: return false
+            if (!selectedItem.isAuto) return true
+            return autoItem is LocationListResult.AutoItem.Success
+        }
+
+        private fun checkSelected(
+            list: List<LocationTimeZoneData>?,
+            permission: LocationListState.LocationPermission
+        ): Boolean {
+            list ?: return false
+            val selectedItem = list.find { it.isSelected } ?: return false
+            if (!selectedItem.isAuto) return true
+            return permission is LocationListState.LocationPermission.Allow
+        }
+
         private fun reduceAutoLocation(
             autoItem: LocationListResult.AutoItem,
             internalViewState: LocationListState
@@ -292,32 +268,22 @@ class LocationListViewModel(
                 is LocationListResult.AutoItem.None -> internalViewState.copy(
                     autoLocationPermission = if (autoItem.isPermissionAllow)
                         LocationListState.LocationPermission.Allow else
-                        LocationListState.LocationPermission.Denied,
-                    autoLocationTimeZoneData = null
+                        LocationListState.LocationPermission.Denied
                 )
                 is LocationListResult.AutoItem.UpdateBegin -> internalViewState.copy(
                     isAutoLocationUpdate = true
                 )
                 is LocationListResult.AutoItem.UpdateEnd -> internalViewState.copy(
-                    isAutoLocationUpdate = false,
-                    autoLocationTimeZoneData = autoItem.location
-                        ?: internalViewState.autoLocationTimeZoneData
+                    isAutoLocationUpdate = false
                 )
                 is LocationListResult.AutoItem.Success -> internalViewState.copy(
-                    autoLocationPermission = LocationListState.LocationPermission.Allow,
-                    autoLocationTimeZoneData = autoItem.location
+                    autoLocationPermission = LocationListState.LocationPermission.Allow
                 )
+            }.let {
+                it.copy(isSelected = checkSelected(it.locationList, it.autoLocationPermission))
             }
         }
 
-//        private fun LocationZoneId.toLocationTimeZoneData() = LocationTimeZoneData(
-//            if (this is LocationZoneId.Manual) id else null,
-//            name,
-//            subName,
-//            LatLng(latitude, longitude),
-//            0.0,
-//            zoneId
-//        )
     }
 
 }

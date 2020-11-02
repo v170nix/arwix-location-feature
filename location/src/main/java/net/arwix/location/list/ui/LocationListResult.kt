@@ -14,17 +14,13 @@ sealed class LocationListResult {
     data class PermissionDenied(val shouldRationale: Boolean) : LocationListResult()
     data class AutoLocation(val autoItem: AutoItem) : LocationListResult()
 
-    data class Select(val item: LocationTimeZoneData, val isAuto: Boolean) : LocationListResult()
-    object Deselect : LocationListResult()
-
     data class Init(
         val permission: Boolean,
         val list: List<LocationTimeZoneData>,
-        val autoItem: AutoItem,
-        val selectedItem: Select? = null
+        val autoItem: AutoItem
     ) : LocationListResult()
 
-    data class ManualList(val list: List<LocationTimeZoneData>) : LocationListResult()
+    data class LocationList(val list: List<LocationTimeZoneData>) : LocationListResult()
 
     sealed class AutoItem {
         data class None(val isPermissionAllow: Boolean) : AutoItem()
@@ -43,8 +39,6 @@ sealed class LocationListResult {
                 zoneId: ZoneId,
                 address: Address? = null
             ) : this(createLocationTimeZoneData(location, zoneId, address))
-
-
         }
 
         companion object {

@@ -11,8 +11,8 @@ import org.threeten.bp.ZoneId
 
 @Dao
 abstract class LocationDao {
-    @Query("SELECT * FROM location_tz_table WHERE isAuto = 0")
-    abstract fun getAllExceptAuto(): Flow<List<LocationTimeZoneData>>
+    @Query("SELECT * FROM location_tz_table")
+    abstract fun getAll(): Flow<List<LocationTimeZoneData>>
 
     @Query("SELECT * FROM location_tz_table WHERE id = :id LIMIT 1")
     abstract suspend fun getItem(id: Int): LocationTimeZoneData?
@@ -25,14 +25,6 @@ abstract class LocationDao {
 
     @Query("SELECT * FROM location_tz_table WHERE isSelected = 1 LIMIT 1")
     abstract suspend fun getSelectedItem(): LocationTimeZoneData?
-
-//    @Transaction
-//    open suspend fun selectItem(id: Int, isAuto: Boolean) {
-//        allDeselect()
-//        if (isAuto) allDeselectAuto()
-//        innerSelectItem(id)
-//        if (isAuto) innerSetAutoItem(id)
-//    }
 
     @Transaction
     open suspend fun selectCustomItem(data: LocationTimeZoneData) {
@@ -94,19 +86,10 @@ abstract class LocationDao {
     @Query("DELETE FROM location_tz_table WHERE id = :id")
     abstract suspend fun deleteById(id: Int)
 
-//    @Query("UPDATE location_tz_table SET isAuto = 0")
-//    protected abstract suspend fun allDeselectAuto()
-
-//    @Query("UPDATE location_tz_table SET isAuto = 1 WHERE id = :id")
-//    protected abstract suspend fun innerSetAutoItem(id: Int)
-
     @Query("UPDATE location_tz_table SET isSelected = 1 WHERE isAuto = 1")
     protected abstract suspend fun selectAuto()
 
     @Query("UPDATE location_tz_table SET isSelected = 0")
     protected abstract suspend fun allDeselect()
 
-
-//    @Query("UPDATE location_tz_table SET isSelected = 1 WHERE id = :id")
-//    protected abstract suspend fun innerSelectItem(id: Int)
 }
