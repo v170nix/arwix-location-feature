@@ -9,8 +9,6 @@ import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_location_list_auto.view.*
-import kotlinx.android.synthetic.main.item_location_list_manual.view.*
 import net.arwix.extension.gone
 import net.arwix.extension.visible
 import net.arwix.location.R
@@ -19,7 +17,6 @@ import net.arwix.location.common.extension.lngToString
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationTimeZoneData
 import org.threeten.bp.Instant
-
 
 class LocationListAdapter(
     private val instant: Instant,
@@ -33,8 +30,6 @@ class LocationListAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<Item>()
-//    private var selectedItem: Item? = null
-//    private var autoState: AutoState = AutoState.None
 
     private val onEditClickListener = View.OnClickListener { v ->
         val item = v.tag as Item.Manual
@@ -58,17 +53,6 @@ class LocationListAdapter(
         }
     }
 
-//    fun setAutoState(newAutoState: AutoState) {
-//        if (autoState == newAutoState) return
-//        if (autoState is AutoState.Allow && newAutoState is AutoState.Allow) {
-//            val oldLatLng = (autoState as AutoState.Allow).data?.latLng
-//            val newLatLng = newAutoState.data?.latLng
-//            if (oldLatLng == newLatLng && newAutoState.data?.name == null) return
-//        }
-//        autoState = newAutoState
-//        setData(items.filterIsInstance<Item.Manual>().map { it.data }.asReversed())
-//    }
-
     fun setData(newData: List<LocationTimeZoneData>, autoState: AutoState) {
         val autoItem = newData.find { it.isAuto }
         val customData = newData.filter { !it.isAuto }
@@ -78,7 +62,6 @@ class LocationListAdapter(
             } else {
                 add(Item.Auto(autoState))
             }
-//            add(Item.Auto(autoState))
             addAll(customData.map { Item.Manual(it) }.asReversed())
         }
         val diffCallback = ItemDiffCallback(items, data)
@@ -87,37 +70,6 @@ class LocationListAdapter(
         items.addAll(data)
         diffResult.dispatchUpdatesTo(this)
     }
-
-//    fun select(item: LocationTimeZoneData, isAuto: Boolean) {
-//        selectedItem?.run {
-//            if (this is Item.Auto && isAuto) return
-//            if (this is Item.Manual && data.id == item.id && !isAuto) return
-//        }
-//        items.forEachIndexed { index, entry ->
-//            val f1 = entry is Item.Auto && isAuto
-//            val f2 = entry is Item.Manual && entry.data.id == item.id && !isAuto
-//            if (f1 || f2) {
-//                deselect()
-//                selectedItem = entry
-//                notifyItemChanged(index)
-//                return
-//            }
-//        }
-//    }
-//
-//    fun deselect() {
-//        selectedItem?.run {
-//            items.forEachIndexed { index, entry ->
-//                val f1 = entry is Item.Auto && this is Item.Auto
-//                val f2 =
-//                    entry is Item.Manual && this is Item.Manual && entry.data.id == this.data.id
-//                if (f1 || f2) {
-//                    selectedItem = null
-//                    notifyItemChanged(index)
-//                }
-//            }
-//        }
-//    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -147,9 +99,8 @@ class LocationListAdapter(
             holder as CustomLocationViewHolder
             with(holder) {
                 setTag(item)
-                if (item.data.isSelected) holder.selected() else holder.deselected()
-//                if (selectedItem?.run { this is Item.Manual && item.data.id == this.data.id } == true)
-//                    holder.selected() else holder.deselected()
+                if (item.data.isSelected) holder.selected()
+                else holder.deselected()
                 setListeners(onSelectedClickListener, onEditClickListener, onDeleteClickListener)
                 setState(item)
             }
@@ -158,10 +109,8 @@ class LocationListAdapter(
             holder as AutoLocationViewHolder
             with(holder) {
                 setTag(item)
-                if (item.state is AutoState.Allow && item.state.data?.isSelected == true)
-                    holder.selected()
+                if (item.state is AutoState.Allow && item.state.data?.isSelected == true) holder.selected()
                 else holder.deselected()
-//                if (selectedItem?.run { this is Item.Auto } == true) holder.selected() else holder.deselected()
                 setListeners(onSelectedClickListener, onUpdateAutoLocation, onRequestPermission)
                 setState(item.state)
             }
@@ -188,7 +137,6 @@ class LocationListAdapter(
         abstract fun setState(item: AutoState)
     }
 
-
     abstract class CustomLocationViewHolder(view: View) : Select, RecyclerView.ViewHolder(view) {
         abstract fun setTag(any: Any)
         abstract fun setListeners(
@@ -196,7 +144,6 @@ class LocationListAdapter(
             editListener: View.OnClickListener,
             deleteListener: View.OnClickListener
         )
-
         abstract fun setState(item: Item.Manual)
     }
 
@@ -206,21 +153,33 @@ class LocationListAdapter(
         private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
         private val onSecondaryColor: Int
     ) : AutoLocationViewHolder(view) {
-        private val permissionDeniedInfo: TextView = view.location_permission_denied_info
-        val permissionDeniedButton: Button = view.location_permission_rationale_button
-        private val successLayout = view.location_main_item_auto_success_layout
-        private val successNoneLayout = view.location_main_item_auto_none_layout
-        private val headerView: TextView = view.location_main_auto_header
-        private val nameView: TextView = view.location_main_item_auto_name_text
-        private val subNameView: TextView = view.location_main_item_auto_sub_name_text
-        private val latitudeView: TextView = view.location_main_item_auto_latitude_text
-        private val longitudeView: TextView = view.location_main_item_auto_longitude_text
-        private val zoneNameView: TextView = view.location_main_item_auto_time_zone_first
-        private val zoneSubNameView: TextView = view.location_main_item_auto_time_zone_second
-        private val zoneGmtOffsetView: TextView = view.location_main_item_auto_time_zone_three
-        val updateButton: Button = view.location_main_item_auto_success_update_button
-        val updateLocationButton: Button = view.location_main_item_auto_update_button
-        val layout: ConstraintLayout = view.location_main_item_auto_layout
+        private val permissionDeniedInfo: TextView =
+            view.findViewById(R.id.location_permission_denied_info)
+        val permissionDeniedButton: Button =
+            view.findViewById(R.id.location_permission_rationale_button)
+        private val successLayout =
+            view.findViewById<View>(R.id.location_main_item_auto_success_layout)
+        private val successNoneLayout =
+            view.findViewById<View>(R.id.location_main_item_auto_none_layout)
+        private val headerView: TextView = view.findViewById(R.id.location_main_auto_header)
+        private val nameView: TextView = view.findViewById(R.id.location_main_item_auto_name_text)
+        private val subNameView: TextView =
+            view.findViewById(R.id.location_main_item_auto_sub_name_text)
+        private val latitudeView: TextView =
+            view.findViewById(R.id.location_main_item_auto_latitude_text)
+        private val longitudeView: TextView =
+            view.findViewById(R.id.location_main_item_auto_longitude_text)
+        private val zoneNameView: TextView =
+            view.findViewById(R.id.location_main_item_auto_time_zone_first)
+        private val zoneSubNameView: TextView =
+            view.findViewById(R.id.location_main_item_auto_time_zone_second)
+        private val zoneGmtOffsetView: TextView =
+            view.findViewById(R.id.location_main_item_auto_time_zone_three)
+        val updateButton: Button =
+            view.findViewById(R.id.location_main_item_auto_success_update_button)
+        val updateLocationButton: Button =
+            view.findViewById(R.id.location_main_item_auto_update_button)
+        val layout: ConstraintLayout = view.findViewById(R.id.location_main_item_auto_layout)
         private val defaultTextColors = latitudeView.textColors
         private val headerTextColors = headerView.textColors
 
@@ -332,18 +291,21 @@ class LocationListAdapter(
         private val nsweStrings: Array<String> = arrayOf("N", "S", "W", "E"),
         private val onSecondaryColor: Int
     ) : CustomLocationViewHolder(view) {
-        private val nameView: TextView = view.location_main_item_name_text
-        private val subNameView: TextView = view.location_main_item_sub_name_text
-        private val latitudeView: TextView = view.location_main_item_latitude_text
-        private val longitudeView: TextView = view.location_main_item_longitude_text
-        private val zoneNameView: TextView = view.location_main_item_time_zone_first
-        private val zoneSubNameView: TextView = view.location_main_item_time_zone_second
-        private val zoneGmtOffsetView: TextView = view.location_main_item_time_zone_three
-        private val editButton: Button = view.location_main_item_edit_button
-        private val deleteButton: Button = view.location_main_item_delete_button
-        private val layout: View = view.location_main_item_layout
-
-        //        private val defaultImageTintList: ColorStateList? = deleteButton.tint
+        private val nameView: TextView = view.findViewById(R.id.location_main_item_name_text)
+        private val subNameView: TextView = view.findViewById(R.id.location_main_item_sub_name_text)
+        private val latitudeView: TextView =
+            view.findViewById(R.id.location_main_item_latitude_text)
+        private val longitudeView: TextView =
+            view.findViewById(R.id.location_main_item_longitude_text)
+        private val zoneNameView: TextView =
+            view.findViewById(R.id.location_main_item_time_zone_first)
+        private val zoneSubNameView: TextView =
+            view.findViewById(R.id.location_main_item_time_zone_second)
+        private val zoneGmtOffsetView: TextView =
+            view.findViewById(R.id.location_main_item_time_zone_three)
+        private val editButton: Button = view.findViewById(R.id.location_main_item_edit_button)
+        private val deleteButton: Button = view.findViewById(R.id.location_main_item_delete_button)
+        private val layout: View = view.findViewById(R.id.location_main_item_layout)
         private val defaultTextColors = latitudeView.textColors
 
         init {
@@ -396,7 +358,6 @@ class LocationListAdapter(
             zoneSubNameView.setTextColor(onSecondaryColor)
             zoneGmtOffsetView.setTextColor(onSecondaryColor)
             latitudeView.setTextColor(onSecondaryColor)
-//            deleteButton.imageTintList = ColorStateList.valueOf(onSecondaryColor)
         }
 
         override fun deselected() {
@@ -409,7 +370,6 @@ class LocationListAdapter(
             zoneSubNameView.setTextColor(defaultTextColors)
             zoneGmtOffsetView.setTextColor(defaultTextColors)
             latitudeView.setTextColor(defaultTextColors)
-//            deleteButton.imageTintList = defaultImageTintList
         }
     }
 
