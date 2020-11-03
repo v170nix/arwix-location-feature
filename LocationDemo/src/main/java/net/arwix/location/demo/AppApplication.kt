@@ -8,8 +8,7 @@ import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDatabase
-import net.arwix.location.domain.LocationGeocoderUseCase
-import net.arwix.location.edit.data.LocationCreateEditRepository
+import net.arwix.location.edit.data.LocationCreateEditUseCase
 import net.arwix.location.export.createLocationListFactory
 import net.arwix.location.export.createLocationPositionFactory
 import net.arwix.location.export.createLocationZoneFactory
@@ -24,26 +23,25 @@ class AppApplication : Application() {
         AndroidThreeTen.init(this)
         db = Room.databaseBuilder(this, LocationDatabase::class.java, "location-db").build()
         val editRepository =
-            LocationCreateEditRepository(db.recordDao())
+            LocationCreateEditUseCase(db.recordDao())
         val geocoderRepository = GeocoderRepository(this)
-        val geocoderUseCase = LocationGeocoderUseCase(geocoderRepository)
         val timeZoneRepository = TimeZoneRepository(this)
         val googleZoneRepository =
             TimeZoneGoogleRepository("")
         locationListFactory = createLocationListFactory(
             this,
             dao = db.recordDao(),
-            editRepository = editRepository,
+            editUseCase = editRepository,
             geocoderRepository = geocoderRepository
         )
 
         locationPositionFactory = createLocationPositionFactory(
             editRepository,
-            geocoderUseCase
+            geocoderRepository
         )
 
         locationZoneFactory = createLocationZoneFactory(
-            editRepository = editRepository,
+            editUseCase = editRepository,
             timeZoneRepository = timeZoneRepository,
             googleZoneRepository = googleZoneRepository
         )

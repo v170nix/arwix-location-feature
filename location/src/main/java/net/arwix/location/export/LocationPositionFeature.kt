@@ -19,7 +19,6 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.android.synthetic.main.merge_location_position_input_layout.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -147,20 +146,20 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
             }
         }
         _submitState.value = state.nextStepIsAvailable
-        if (state.subData?.name == null) config.inputView.placeSearchText.text = ""
-        if (state.subData == null) return
-        if (state.subData.name != null) config.inputView.placeSearchText.text = state.subData.name
+        if (state.data?.name == null) config.inputView.placeSearchText.text = ""
+        if (state.data == null) return
+        if (state.data.name != null) config.inputView.placeSearchText.text = state.data.name
 
         config.inputView.latitudeInputLayout.apply {
             error = null
-            editText?.setText(state.subData.latLng.latitude.toString())
+            editText?.setText(state.data.latLng.latitude.toString())
         }
         config.inputView.longitudeInputLayout.apply {
             error = null
-            editText?.setText(state.subData.latLng.longitude.toString())
+            editText?.setText(state.data.latLng.longitude.toString())
         }
         if (state.updateMapAfterChangeLocation) {
-            markerStateFlow.value = state.subData.latLng to state.subData.cameraPosition
+            markerStateFlow.value = state.data.latLng to state.data.cameraPosition
 //            markerChannel.offer(state.subData.latLng to state.subData.cameraPosition)
         }
     }
@@ -258,12 +257,12 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
 
     fun createDefaultEditPositionView(view: View) =
         EditPositionView(
-            view.location_position_place_text,
-            view.location_position_latitude_input_layout,
-            view.location_position_latitude_edit_text,
-            view.location_position_longitude_input_layout,
-            view.location_position_longitude_edit_text,
-            view.location_position_more_button
+            view.findViewById(R.id.location_position_place_text),
+            view.findViewById(R.id.location_position_latitude_input_layout),
+            view.findViewById(R.id.location_position_latitude_edit_text),
+            view.findViewById(R.id.location_position_longitude_input_layout),
+            view.findViewById(R.id.location_position_longitude_edit_text),
+            view.findViewById(R.id.location_position_more_button)
         )
 
     data class EditPositionView(

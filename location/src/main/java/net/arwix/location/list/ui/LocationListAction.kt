@@ -34,10 +34,6 @@ sealed class LocationListAction : StateViewModel.Action() {
         override val type: ActionType = ActionType.Sync
     ) : LocationListAction()
 
-    object AddItem : LocationListAction() {
-        override val type: ActionType get() = ActionType.Sync
-    }
-
     data class SelectFromCustomList(
         val data: LocationTimeZoneData,
         override val type: ActionType = ActionType.Latest

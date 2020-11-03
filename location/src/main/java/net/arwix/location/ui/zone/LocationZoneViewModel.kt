@@ -1,18 +1,21 @@
 package net.arwix.location.ui.zone
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataScope
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
-import net.arwix.location.edit.data.LocationCreateEditRepository
+import net.arwix.location.edit.data.LocationCreateEditUseCase
 import net.arwix.mvi.SimpleIntentViewModel
 
 class LocationZoneViewModel(
-    private val repository: LocationCreateEditRepository,
+    private val useCase: LocationCreateEditUseCase,
     private val zoneRepository: TimeZoneRepository,
     private val googleZoneRepository: TimeZoneGoogleRepository
 ) : SimpleIntentViewModel<LocationZoneAction, LocationZoneResult, LocationZoneState>() {
@@ -21,15 +24,12 @@ class LocationZoneViewModel(
     private var previousLatLng: LatLng? = null
 
     init {
-        viewModelScope.launch {
-            repository.locationData.asFlow()
-                .collect {
-                    if (it == null || previousLatLng != it.latLng) notificationFromObserver(
-                        LocationZoneResult.ClearZone
-                    )
-                    previousLatLng = it?.latLng
-                }
-        }
+        useCase.locationData.onEach {
+            if (it == null || previousLatLng != it.latLng) notificationFromObserver(
+                LocationZoneResult.ClearZone
+            )
+            previousLatLng = it?.latLng
+        }.launchIn(viewModelScope)
         nonCancelableIntent(LocationZoneAction.LoadZoneList)
     }
 
@@ -37,7 +37,7 @@ class LocationZoneViewModel(
         liveData {
             when (action) {
                 is LocationZoneAction.Init -> {
-                    val latLng = repository.locationData.value?.latLng ?: return@liveData
+                    val latLng = useCase.locationData.value?.latLng ?: return@liveData
                     autoZone(latLng)
                 }
                 is LocationZoneAction.LoadZoneList -> {
@@ -121,12 +121,12 @@ class LocationZoneViewModel(
                 )
             }
         }
-        repository.timeZoneData.value = state.selectZoneId?.zoneId
+        useCase.timeZoneData.value = state.selectZoneId?.zoneId
         return state
     }
 
     suspend fun submit() {
         super.onCleared()
-        repository.submit()
+        useCase.submit()
     }
 }

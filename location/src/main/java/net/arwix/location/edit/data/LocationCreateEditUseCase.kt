@@ -1,18 +1,22 @@
 package net.arwix.location.edit.data
 
+import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.CameraPosition
-import net.arwix.location.data.EditLocationSubData
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import net.arwix.location.data.EditLocationData
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.data.room.LocationTimeZoneData
 import org.threeten.bp.ZoneId
 
-class LocationCreateEditRepository(
+class LocationCreateEditUseCase(
     val dao: LocationDao
 ) {
 
-    val locationData = MutableLiveData<EditLocationSubData>()
+    private val _editLocationData = MutableStateFlow<EditLocationData?>(null)
+    val locationData = _editLocationData.asStateFlow()
     val timeZoneData = MutableLiveData<ZoneId>()
 
     private val _isNewData = MutableLiveData<Boolean>()
@@ -21,16 +25,17 @@ class LocationCreateEditRepository(
     private val _isEditData = MutableLiveData<LocationTimeZoneData>()
     val isEditData: LiveData<LocationTimeZoneData> = _isEditData
 
+    @UiThread
     fun create() {
-        locationData.postValue(null)
-        timeZoneData.postValue(null)
-        _isEditData.postValue(null)
-        _isNewData.postValue(true)
+        _editLocationData.value = null
+        timeZoneData.value = null
+        _isEditData.value = null
+        _isNewData.value = true
     }
 
     fun edit(data: LocationTimeZoneData) {
         timeZoneData.postValue(data.zone)
-        locationData.postValue(EditLocationSubData(data.name,
+        _editLocationData.value = EditLocationData(data.name,
             data.subName,
             data.latLng,
             CameraPosition.builder()
@@ -39,9 +44,13 @@ class LocationCreateEditRepository(
                 .apply { data.tilt?.run(::tilt) }
                 .apply { data.bearing?.run(::bearing) }
                 .build()
-        ))
+        )
         _isNewData.postValue(false)
         _isEditData.postValue(data)
+    }
+
+    fun updateLocation(editLocationData: EditLocationData?) {
+        _editLocationData.value = editLocationData
     }
 
     suspend fun submit() {

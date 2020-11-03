@@ -1,6 +1,7 @@
 package net.arwix.location.list.ui
 
 import android.content.Context
+import androidx.annotation.UiThread
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
@@ -11,14 +12,14 @@ import net.arwix.location.data.room.LocationDao
 import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.domain.LocationHelper
 import net.arwix.location.domain.LocationPermissionHelper
-import net.arwix.location.edit.data.LocationCreateEditRepository
+import net.arwix.location.edit.data.LocationCreateEditUseCase
 import net.arwix.mvi.StateViewModel
 import org.threeten.bp.ZoneId
 
 class LocationListViewModel(
     private val applicationContext: Context,
     private val dao: LocationDao,
-    private val editRepository: LocationCreateEditRepository,
+    private val editUseCase: LocationCreateEditUseCase,
     private val geocoderRepository: GeocoderRepository
 ) : StateViewModel<LocationListAction, LocationListResult, LocationListState>() {
 
@@ -189,10 +190,18 @@ class LocationListViewModel(
                         dao.deleteById(it)
                     }
                 }
-                is LocationListAction.EditItem -> editRepository.edit(action.item)
-                LocationListAction.AddItem -> editRepository.create()
+                is LocationListAction.EditItem -> {
+                    withContext(Dispatchers.Main) {
+                        editUseCase.edit(action.item)
+                    }
+                }
             }
         }
+    }
+
+    @UiThread
+    fun addNewLocation() {
+        editUseCase.create()
     }
 
     override suspend fun reduce(

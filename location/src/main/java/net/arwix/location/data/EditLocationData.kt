@@ -3,7 +3,7 @@ package net.arwix.location.data
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 
-data class EditLocationSubData(
+data class EditLocationData(
     val name: String?,
     val subName: String?,
     val latLng: LatLng,

@@ -5,14 +5,14 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.Place
 import net.arwix.location.common.extension.getSubTitle
-import net.arwix.location.data.EditLocationSubData
+import net.arwix.location.data.EditLocationData
 import net.arwix.location.data.getSubTitle
 import net.arwix.location.data.getTitle
 
 sealed class LocationPositionResult {
-    data class SuccessPlace(val subData: EditLocationSubData) : LocationPositionResult() {
+    data class SuccessPlace(val data: EditLocationData) : LocationPositionResult() {
         constructor(place: Place, cameraPosition: CameraPosition?) : this(
-            EditLocationSubData(
+            EditLocationData(
                 place.name.orEmpty(),
                 place.getSubTitle(),
                 place.latLng!!,
@@ -21,16 +21,16 @@ sealed class LocationPositionResult {
         )
     }
 
-    data class ProgressGeocoderFromMap(val subData: EditLocationSubData) :
+    data class ProgressGeocoderFromMap(val data: EditLocationData) :
         LocationPositionResult() {
         constructor(latLng: LatLng, cameraPosition: CameraPosition?) : this(
-            EditLocationSubData("", "", latLng, cameraPosition)
+            EditLocationData("", "", latLng, cameraPosition)
         )
     }
 
-    data class SuccessGeocoder(val subData: EditLocationSubData) : LocationPositionResult() {
+    data class SuccessGeocoder(val data: EditLocationData) : LocationPositionResult() {
         constructor(address: Address, latLng: LatLng, cameraPosition: CameraPosition?) : this(
-            EditLocationSubData(
+            EditLocationData(
                 address.getTitle(),
                 address.getSubTitle(),
                 latLng,
@@ -39,20 +39,20 @@ sealed class LocationPositionResult {
         )
     }
 
-    data class ProgressGeocoderFromInput(val subData: EditLocationSubData) :
+    data class ProgressGeocoderFromInput(val data: EditLocationData) :
         LocationPositionResult() {
         constructor(latLng: LatLng, cameraPosition: CameraPosition?) : this(
-            EditLocationSubData("", "", latLng, cameraPosition)
+            EditLocationData("", "", latLng, cameraPosition)
         )
     }
 
-    data class ErrorGeocoder(val subData: EditLocationSubData) : LocationPositionResult() {
+    data class ErrorGeocoder(val data: EditLocationData) : LocationPositionResult() {
         constructor(latLng: LatLng, cameraPosition: CameraPosition?) : this(
-            EditLocationSubData("", "", latLng, cameraPosition)
+            EditLocationData("", "", latLng, cameraPosition)
         )
     }
 
-    data class InitData(val subData: EditLocationSubData?) : LocationPositionResult()
+    data class InitData(val data: EditLocationData?) : LocationPositionResult()
 
     data class ErrorPlaceLatLng(val place: Place) : LocationPositionResult()
     data class ErrorInput(val latitude: Double?, val longitude: Double?) : LocationPositionResult()

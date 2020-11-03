@@ -100,7 +100,7 @@ abstract class LocationListFragment : Fragment() {
     abstract fun navigateToEditItemFragment()
 
     fun doAddLocation() {
-        model.nextSyncAction(LocationListAction.AddItem)
+        model.addNewLocation()
     }
 
     private fun render(state: LocationListState) {
