@@ -1,13 +1,16 @@
 package net.arwix.location.export
 
 import android.content.Intent
+import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -19,9 +22,6 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import net.arwix.extension.*
@@ -32,17 +32,14 @@ import net.arwix.location.ui.position.LocationPositionAction
 import net.arwix.location.ui.position.LocationPositionState
 import net.arwix.location.ui.position.LocationPositionViewModel
 
-class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope(),
-    OnMapReadyCallback {
+abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
 
     @Suppress("ArrayInDataClass")
     data class Config(
         val modelStoreOwner: ViewModelStoreOwner,
-        val lifecycleOwner: LifecycleOwner,
         val locationPositionFactory: ViewModelProvider.Factory,
         val mapFragment: SupportMapFragment,
         val placeKey: String,
-        val inputView: EditPositionView,
         val errorFormatString: String = mapFragment.resources.getString(R.string.location_error_range)
     )
 
@@ -59,16 +56,42 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
         Place.Field.ADDRESS
     )
 
-    private val _submitState = MutableStateFlow(false)
-    val submitState: StateFlow<Boolean> = _submitState
+    abstract var inputView: EditPositionView
 
-    fun setup(config: Config, fragment: Fragment) {
+    private val _submitState = MutableStateFlow(false)
+    val submitState = _submitState.asStateFlow()
+
+    protected fun setup(config: Config) {
         this.config = config
+        model = ViewModelProvider(
+            config.modelStoreOwner,
+            config.locationPositionFactory
+        ).get(LocationPositionViewModel::class.java)
+        model.state.onEach(::render).launchIn(viewLifecycleOwner.lifecycleScope)
+
         if (!Places.isInitialized()) {
-            Places.initialize(fragment.requireContext().applicationContext, config.placeKey)
+            Places.initialize(requireContext().applicationContext, config.placeKey)
         }
-        config.inputView.apply {
-            val weakFragment = fragment.weak()
+        config.mapFragment.getMapAsync(this)
+
+        val googleLogo = config.mapFragment.requireView().findViewWithTag<View>("GoogleWatermark")
+        val glLayoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, 0)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
+        googleLogo.layoutParams = glLayoutParams
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        inputView.apply {
+            val weakFragment = this@LocationPositionFragment.weak()
             placeSearchText.setOnClickListener {
                 weakFragment.runWeak { startPlace(placeFields) }
             }
@@ -90,7 +113,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
                 }
             }
             expandInputButton.setOnClickListener {
-                if (this@LocationPositionFeature.config.inputView.latitudeInputLayout.visibility == View.VISIBLE) {
+                if (inputView.latitudeInputLayout.visibility == View.VISIBLE) {
                     expandInputButton.setImageResource(R.drawable.ic_location_feature_expand_less)
                     latitudeInputLayout.gone()
                     longitudeInputLayout.gone()
@@ -101,31 +124,11 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
                 }
             }
         }
-        config.mapFragment.getMapAsync(this)
-
-        val googleLogo = config.mapFragment.requireView().findViewWithTag<View>("GoogleWatermark")
-        val glLayoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, 0)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
-        googleLogo.layoutParams = glLayoutParams
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    fun onCreate() {
-        model = ViewModelProvider(
-            config.modelStoreOwner,
-            config.locationPositionFactory
-        ).get(LocationPositionViewModel::class.java)
-        model.state.observe(config.lifecycleOwner, Observer(::render))
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
+    override fun onDestroy() {
+        super.onDestroy()
         googleMap = null
-        cancel()
     }
 
     private fun render(state: LocationPositionState) {
@@ -136,25 +139,25 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
             }
             is LocationPositionState.ErrorState.Input -> with(state.error) {
                 if (latitude != null && (latitude < -90.0 || latitude > 90.0))
-                    setErrorInput(config.inputView.latitudeInputLayout, 90)
+                    setErrorInput(inputView.latitudeInputLayout, 90)
                 else
-                    config.inputView.latitudeInputLayout.error = null
+                    inputView.latitudeInputLayout.error = null
                 if (longitude == null || longitude < -180.0 || longitude > 180.0)
-                    setErrorInput(config.inputView.longitudeInputLayout, 180)
+                    setErrorInput(inputView.longitudeInputLayout, 180)
                 else
-                    config.inputView.longitudeInputLayout.error = null
+                    inputView.longitudeInputLayout.error = null
             }
         }
         _submitState.value = state.nextStepIsAvailable
-        if (state.data?.name == null) config.inputView.placeSearchText.text = ""
+        if (state.data?.name == null) inputView.placeSearchText.text = ""
         if (state.data == null) return
-        if (state.data.name != null) config.inputView.placeSearchText.text = state.data.name
+        if (state.data.name != null) inputView.placeSearchText.text = state.data.name
 
-        config.inputView.latitudeInputLayout.apply {
+        inputView.latitudeInputLayout.apply {
             error = null
             editText?.setText(state.data.latLng.latitude.toString())
         }
-        config.inputView.longitudeInputLayout.apply {
+        inputView.longitudeInputLayout.apply {
             error = null
             editText?.setText(state.data.latLng.longitude.toString())
         }
@@ -177,7 +180,7 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         map.setOnMapClickListener { latLng ->
-            launch {
+            lifecycleScope.launch {
                 googleMap?.run {
                     model.nextLatestAction(
                         LocationPositionAction.ChangeFromMap(
@@ -217,12 +220,12 @@ class LocationPositionFeature : LifecycleObserver, CoroutineScope by MainScope()
                         ))
                 }
             }
-            .launchIn(this)
+            .launchIn(lifecycleScope)
     }
 
     private fun actionFromInput() {
-        val lat = config.inputView.latitudeInputLayout.editText?.text.toString().toDoubleOrNull()
-        val lng = config.inputView.longitudeInputLayout.editText?.text.toString().toDoubleOrNull()
+        val lat = inputView.latitudeInputLayout.editText?.text.toString().toDoubleOrNull()
+        val lng = inputView.longitudeInputLayout.editText?.text.toString().toDoubleOrNull()
         val latLng = if (lat != null && lng != null) LatLng(lat, lng) else null
         model.nextLatestAction(
             LocationPositionAction.ChangeFromInput(

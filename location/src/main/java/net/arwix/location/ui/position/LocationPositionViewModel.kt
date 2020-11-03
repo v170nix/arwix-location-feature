@@ -13,22 +13,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.edit.data.LocationCreateEditUseCase
-import net.arwix.mvi.StateViewModel
+import net.arwix.mvi.FlowViewModel
 
 class LocationPositionViewModel(
     private val editUseCase: LocationCreateEditUseCase,
     private val geocoderRepository: GeocoderRepository
 ) :
-    StateViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>() {
-
-    private var geocodeJob: Job? = null
-
-    override var internalViewState =
+    FlowViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>(
         LocationPositionState(
             data = editUseCase.locationData.value,
             nextStepIsAvailable = editUseCase.locationData.value?.let { true } ?: false
         )
+    ) {
 
+    @Volatile
+    private var geocodeJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -49,9 +48,9 @@ class LocationPositionViewModel(
         action: LocationPositionAction
     ): Flow<LocationPositionResult> = flow {
         when (action) {
-            is LocationPositionAction.Init -> {
-                emit(LocationPositionResult.InitData(internalViewState.data))
-            }
+//            is LocationPositionAction.Init -> {
+//                emit(LocationPositionResult.InitData(internalViewState.data))
+//            }
             is LocationPositionAction.ChangeFromPlace -> {
                 geocodeJob?.cancel()
                 if (action.place.latLng == null)

@@ -3,14 +3,16 @@ package net.arwix.location.export
 import android.Manifest
 import android.app.Activity
 import android.os.Bundle
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import net.arwix.extension.getThemeColor
 import net.arwix.location.R
@@ -49,9 +51,8 @@ abstract class LocationListFragment : Fragment() {
             }
         }
 
-
     private val _submitState = MutableStateFlow(false)
-    val submitState: StateFlow<Boolean> = _submitState
+    val submitState = _submitState.asStateFlow()
 
     protected fun setup(config: Config) {
         this.config = config
@@ -92,7 +93,11 @@ abstract class LocationListFragment : Fragment() {
             config.modelStoreOwner,
             config.locationMainFactory
         ).get(LocationListViewModel::class.java)
-        model.state.observe(this, Observer(::render))
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        model.state.onEach(::render).launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     fun getAdapter() = adapter

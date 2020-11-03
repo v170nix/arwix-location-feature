@@ -13,7 +13,7 @@ import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.domain.LocationHelper
 import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.edit.data.LocationCreateEditUseCase
-import net.arwix.mvi.StateViewModel
+import net.arwix.mvi.FlowViewModel
 import org.threeten.bp.ZoneId
 
 class LocationListViewModel(
@@ -21,9 +21,8 @@ class LocationListViewModel(
     private val dao: LocationDao,
     private val editUseCase: LocationCreateEditUseCase,
     private val geocoderRepository: GeocoderRepository
-) : StateViewModel<LocationListAction, LocationListResult, LocationListState>() {
+) : FlowViewModel<LocationListAction, LocationListResult, LocationListState>(LocationListState()) {
 
-    override var internalViewState: LocationListState = LocationListState()
     private val updateLocationJobs = mutableListOf<Job>()
 
     init {
@@ -210,39 +209,39 @@ class LocationListViewModel(
     ): LocationListState {
         return when (result) {
             is LocationListResult.Init -> {
-                reduceAutoLocation(result.autoItem, internalViewState).copy(
+                reduceAutoLocation(result.autoItem, state).copy(
                     locationList = result.list,
                     isSelected = checkSelected(result.list, result.autoItem)
                 )
             }
             is LocationListResult.LocationList -> {
-                internalViewState.copy(
+                state.copy(
                     locationList = result.list,
                     isSelected = checkSelected(
                         result.list,
-                        internalViewState.autoLocationPermission
+                        state.autoLocationPermission
                     )
                 )
             }
-            is LocationListResult.PermissionGranted -> internalViewState.copy(
+            is LocationListResult.PermissionGranted -> state.copy(
                 autoLocationPermission = LocationListState.LocationPermission.Allow,
                 isSelected = checkSelected(
-                    internalViewState.locationList,
+                    state.locationList,
                     LocationListState.LocationPermission.Allow
                 )
             )
-            is LocationListResult.PermissionDenied -> internalViewState.copy(
+            is LocationListResult.PermissionDenied -> state.copy(
                 autoLocationPermission = if (result.shouldRationale)
                     LocationListState.LocationPermission.DeniedRationale
                 else
                     LocationListState.LocationPermission.Denied,
                 isSelected = checkSelected(
-                    internalViewState.locationList,
+                    state.locationList,
                     LocationListState.LocationPermission.Denied
                 )
             )
             is LocationListResult.AutoLocation -> {
-                reduceAutoLocation(result.autoItem, internalViewState)
+                reduceAutoLocation(result.autoItem, state)
             }
         }
     }
