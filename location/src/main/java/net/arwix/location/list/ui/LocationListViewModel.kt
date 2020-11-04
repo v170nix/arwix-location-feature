@@ -12,7 +12,7 @@ import net.arwix.location.data.room.LocationDao
 import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.domain.LocationHelper
 import net.arwix.location.domain.LocationPermissionHelper
-import net.arwix.location.edit.data.LocationCreateEditUseCase
+import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.mvi.FlowViewModel
 import org.threeten.bp.ZoneId
 
@@ -199,7 +199,7 @@ class LocationListViewModel(
     }
 
     @UiThread
-    fun addNewLocation() {
+    suspend fun addNewLocation() {
         editUseCase.create()
     }
 

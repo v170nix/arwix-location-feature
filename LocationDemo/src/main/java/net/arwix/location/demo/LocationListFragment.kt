@@ -68,6 +68,11 @@ class LocationListFragment : LocationListFragment() {
         }
     }
 
+    override fun onDestroyView() {
+        location_main_list.adapter = null
+        super.onDestroyView()
+    }
+
     override fun navigateToEditItemFragment() {
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(

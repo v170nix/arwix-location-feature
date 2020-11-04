@@ -1,4 +1,4 @@
-package net.arwix.location.ui.position
+package net.arwix.location.edit.position.ui
 
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng

@@ -1,56 +1,50 @@
-package net.arwix.location.ui.position
+package net.arwix.location.edit.position.ui
 
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import net.arwix.location.data.GeocoderRepository
-import net.arwix.location.edit.data.LocationCreateEditUseCase
+import net.arwix.location.edit.data.EditLocationData
+import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.mvi.FlowViewModel
 
 class LocationPositionViewModel(
     private val editUseCase: LocationCreateEditUseCase,
     private val geocoderRepository: GeocoderRepository
-) :
-    FlowViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>(
-        LocationPositionState(
-            data = editUseCase.locationData.value,
-            nextStepIsAvailable = editUseCase.locationData.value?.let { true } ?: false
-        )
-    ) {
+) : FlowViewModel<LocationPositionAction, LocationPositionResult, LocationPositionState>(
+    LocationPositionState()
+) {
 
     @Volatile
     private var geocodeJob: Job? = null
 
     init {
-        viewModelScope.launch {
-            editUseCase.isNewData.asFlow().collect {
-                if (it) nextResult(LocationPositionResult.InitData(null))
+        editUseCase.initEditingFlow
+            .onEach {
+                if (it == null) nextResult(LocationPositionResult.InitData(null))
+                else nextResult(
+                    LocationPositionResult.InitData(
+                        EditLocationData.createFromLTZData(
+                            it
+                        )
+                    )
+                )
             }
-        }
-        viewModelScope.launch {
-            editUseCase.isEditData.asFlow().collect {
-                editUseCase.locationData.value?.run {
-                    nextResult(LocationPositionResult.InitData(this))
-                }
-            }
-        }
+            .launchIn(viewModelScope)
     }
 
     override suspend fun dispatchAction(
         action: LocationPositionAction
     ): Flow<LocationPositionResult> = flow {
         when (action) {
-//            is LocationPositionAction.Init -> {
-//                emit(LocationPositionResult.InitData(internalViewState.data))
-//            }
             is LocationPositionAction.ChangeFromPlace -> {
                 geocodeJob?.cancel()
                 if (action.place.latLng == null)

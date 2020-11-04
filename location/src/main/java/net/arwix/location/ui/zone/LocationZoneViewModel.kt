@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
-import net.arwix.location.edit.data.LocationCreateEditUseCase
+import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.mvi.SimpleIntentViewModel
 
 class LocationZoneViewModel(
@@ -24,7 +24,7 @@ class LocationZoneViewModel(
     private var previousLatLng: LatLng? = null
 
     init {
-        useCase.locationData.onEach {
+        useCase.editLocationFlow.onEach {
             if (it == null || previousLatLng != it.latLng) notificationFromObserver(
                 LocationZoneResult.ClearZone
             )
@@ -37,7 +37,7 @@ class LocationZoneViewModel(
         liveData {
             when (action) {
                 is LocationZoneAction.Init -> {
-                    val latLng = useCase.locationData.value?.latLng ?: return@liveData
+                    val latLng = useCase.editLocationFlow.value?.latLng ?: return@liveData
                     autoZone(latLng)
                 }
                 is LocationZoneAction.LoadZoneList -> {

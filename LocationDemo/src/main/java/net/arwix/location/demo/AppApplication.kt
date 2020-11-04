@@ -8,7 +8,7 @@ import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDatabase
-import net.arwix.location.edit.data.LocationCreateEditUseCase
+import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.location.export.createLocationListFactory
 import net.arwix.location.export.createLocationPositionFactory
 import net.arwix.location.export.createLocationZoneFactory

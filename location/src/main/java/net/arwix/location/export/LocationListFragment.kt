@@ -105,7 +105,9 @@ abstract class LocationListFragment : Fragment() {
     abstract fun navigateToEditItemFragment()
 
     fun doAddLocation() {
-        model.addNewLocation()
+        lifecycleScope.launch {
+            model.addNewLocation()
+        }
     }
 
     private fun render(state: LocationListState) {

@@ -1,8 +1,8 @@
-package net.arwix.location.ui.position
+package net.arwix.location.edit.position.ui
 
 
 import com.google.android.libraries.places.api.model.Place
-import net.arwix.location.data.EditLocationData
+import net.arwix.location.edit.data.EditLocationData
 
 data class LocationPositionState(
     val updateMapAfterChangeLocation: Boolean = false,

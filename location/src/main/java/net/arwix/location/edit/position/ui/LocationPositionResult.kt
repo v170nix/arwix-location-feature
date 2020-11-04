@@ -1,13 +1,13 @@
-package net.arwix.location.ui.position
+package net.arwix.location.edit.position.ui
 
 import android.location.Address
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.Place
 import net.arwix.location.common.extension.getSubTitle
-import net.arwix.location.data.EditLocationData
 import net.arwix.location.data.getSubTitle
 import net.arwix.location.data.getTitle
+import net.arwix.location.edit.data.EditLocationData
 
 sealed class LocationPositionResult {
     data class SuccessPlace(val data: EditLocationData) : LocationPositionResult() {

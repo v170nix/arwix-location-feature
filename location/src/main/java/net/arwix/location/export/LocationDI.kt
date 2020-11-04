@@ -7,9 +7,9 @@ import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDao
-import net.arwix.location.edit.data.LocationCreateEditUseCase
+import net.arwix.location.edit.domain.LocationCreateEditUseCase
+import net.arwix.location.edit.position.ui.LocationPositionViewModel
 import net.arwix.location.list.ui.LocationListViewModel
-import net.arwix.location.ui.position.LocationPositionViewModel
 import net.arwix.location.ui.zone.LocationZoneViewModel
 
 @Suppress("UNCHECKED_CAST")

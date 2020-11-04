@@ -28,9 +28,9 @@ import net.arwix.extension.*
 import net.arwix.location.R
 import net.arwix.location.common.extension.checkPlace
 import net.arwix.location.common.extension.startPlace
-import net.arwix.location.ui.position.LocationPositionAction
-import net.arwix.location.ui.position.LocationPositionState
-import net.arwix.location.ui.position.LocationPositionViewModel
+import net.arwix.location.edit.position.ui.LocationPositionAction
+import net.arwix.location.edit.position.ui.LocationPositionState
+import net.arwix.location.edit.position.ui.LocationPositionViewModel
 
 abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
 
@@ -84,10 +84,6 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         googleLogo.layoutParams = glLayoutParams
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         inputView.apply {
@@ -126,8 +122,8 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         googleMap = null
     }
 
