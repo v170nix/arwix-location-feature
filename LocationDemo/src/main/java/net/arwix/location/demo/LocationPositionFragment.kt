@@ -2,7 +2,6 @@ package net.arwix.location.demo
 
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -70,8 +69,8 @@ class LocationPositionFragment : LocationPositionFragment() {
         location_position_input_layout.setBackgroundColor(resources.getColor(R.color.colorBgOnMap))
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        doActivityResult(requestCode, resultCode, data)
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        doActivityResult(requestCode, resultCode, data)
+//    }
 }

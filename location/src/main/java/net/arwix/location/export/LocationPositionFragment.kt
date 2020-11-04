@@ -1,5 +1,6 @@
 package net.arwix.location.export
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -7,6 +8,8 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -20,14 +23,18 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import net.arwix.extension.*
+import net.arwix.extension.gone
+import net.arwix.extension.hideSoftInputFromWindow
+import net.arwix.extension.visible
 import net.arwix.location.R
-import net.arwix.location.common.extension.checkPlace
-import net.arwix.location.common.extension.startPlace
+import net.arwix.location.common.extension.PlaceAutocompleteResult
 import net.arwix.location.edit.position.ui.LocationPositionAction
 import net.arwix.location.edit.position.ui.LocationPositionState
 import net.arwix.location.edit.position.ui.LocationPositionViewModel
@@ -55,6 +62,29 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         Place.Field.ADDRESS_COMPONENTS,
         Place.Field.ADDRESS
     )
+
+    private val placeAutocompleteLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+            val data = activityResult.data ?: return@registerForActivityResult
+
+            val place = when (activityResult.resultCode) {
+                Activity.RESULT_OK -> PlaceAutocompleteResult.Ok(
+                    Autocomplete.getPlaceFromIntent(data)
+                )
+                AutocompleteActivity.RESULT_ERROR -> PlaceAutocompleteResult.Error(
+                    Autocomplete.getStatusFromIntent(data)
+                )
+                Activity.RESULT_CANCELED -> PlaceAutocompleteResult.Canceled
+                else -> return@registerForActivityResult
+            }.getPlaceInResult() ?: return@registerForActivityResult
+
+            model.nextLatestAction(
+                LocationPositionAction.ChangeFromPlace(
+                    place,
+                    getCameraPosition(place.latLng)
+                )
+            )
+        }
 
     abstract var inputView: EditPositionView
 
@@ -87,9 +117,11 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         inputView.apply {
-            val weakFragment = this@LocationPositionFragment.weak()
             placeSearchText.setOnClickListener {
-                weakFragment.runWeak { startPlace(placeFields) }
+                placeAutocompleteLauncher.launch(
+                    Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, placeFields)
+                        .build(requireContext())
+                )
             }
             latitudeEditText.setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_NEXT) actionFromInput()
@@ -161,16 +193,6 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
             markerStateFlow.value = state.data.latLng to state.data.cameraPosition
 //            markerChannel.offer(state.subData.latLng to state.subData.cameraPosition)
         }
-    }
-
-    fun doActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        checkPlace(requestCode, resultCode, data)
-            ?.getPlaceInResult()
-            ?.run {
-                model.nextLatestAction(
-                    LocationPositionAction.ChangeFromPlace(this, getCameraPosition(latLng))
-                )
-            }
     }
 
     override fun onMapReady(map: GoogleMap) {
