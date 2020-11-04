@@ -1,4 +1,4 @@
-package net.arwix.location.common.extension
+package net.arwix.location.edit.data
 
 import com.google.android.gms.common.api.Status
 import com.google.android.libraries.places.api.model.Place

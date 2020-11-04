@@ -34,7 +34,7 @@ import net.arwix.extension.gone
 import net.arwix.extension.hideSoftInputFromWindow
 import net.arwix.extension.visible
 import net.arwix.location.R
-import net.arwix.location.common.extension.PlaceAutocompleteResult
+import net.arwix.location.edit.data.PlaceAutocompleteResult
 import net.arwix.location.edit.position.ui.LocationPositionAction
 import net.arwix.location.edit.position.ui.LocationPositionState
 import net.arwix.location.edit.position.ui.LocationPositionViewModel
