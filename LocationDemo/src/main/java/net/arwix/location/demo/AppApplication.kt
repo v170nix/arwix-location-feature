@@ -27,7 +27,7 @@ class AppApplication : Application() {
         val geocoderRepository = GeocoderRepository(this)
         val timeZoneRepository = TimeZoneRepository(this)
         val googleZoneRepository =
-            TimeZoneGoogleRepository("")
+            TimeZoneGoogleRepository(resources.getString(R.string.google_timezone_key))
         locationListFactory = createLocationListFactory(
             this,
             dao = db.recordDao(),
