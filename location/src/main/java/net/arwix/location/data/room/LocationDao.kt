@@ -17,10 +17,10 @@ abstract class LocationDao {
     @Query("SELECT * FROM location_tz_table WHERE id = :id LIMIT 1")
     abstract suspend fun getItem(id: Int): LocationTimeZoneData?
 
-    @Query("SELECT * FROM location_tz_table WHERE isAuto = 1 LIMIT 1")
+    @Query("SELECT * FROM location_tz_table WHERE isAutoLocation = 1 LIMIT 1")
     abstract suspend fun getAutoItem(): LocationTimeZoneData?
 
-    @Query("SELECT * FROM location_tz_table WHERE isAuto = 1 LIMIT 1")
+    @Query("SELECT * FROM location_tz_table WHERE isAutoLocation = 1 LIMIT 1")
     abstract fun getAutoItemAsFlow(): Flow<LocationTimeZoneData>
 
     @Query("SELECT * FROM location_tz_table WHERE isSelected = 1 LIMIT 1")
@@ -52,7 +52,7 @@ abstract class LocationDao {
                     latLng = LatLng(location.latitude, location.longitude),
                     altitude = location.altitude,
                     zone = zoneId,
-                    isAuto = true
+                    isAutoLocation = true
                 )
             )
         }
@@ -86,7 +86,7 @@ abstract class LocationDao {
     @Query("DELETE FROM location_tz_table WHERE id = :id")
     abstract suspend fun deleteById(id: Int)
 
-    @Query("UPDATE location_tz_table SET isSelected = 1 WHERE isAuto = 1")
+    @Query("UPDATE location_tz_table SET isSelected = 1 WHERE isAutoLocation = 1")
     protected abstract suspend fun selectAuto()
 
     @Query("UPDATE location_tz_table SET isSelected = 0")

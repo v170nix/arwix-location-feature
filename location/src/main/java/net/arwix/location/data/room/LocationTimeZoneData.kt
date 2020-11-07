@@ -13,11 +13,12 @@ data class LocationTimeZoneData(
     @ColumnInfo(name = "lat_lng") val latLng: LatLng,
     val altitude: Double = 0.0,
     val zone: ZoneId,
+    val isAutoZone: Boolean = false,
     val zoom: Float? = null,
     val bearing: Float? = null,
     val tilt: Float? = null,
     val isSelected: Boolean = false,
-    val isAuto: Boolean = false
+    val isAutoLocation: Boolean = false
 ) {
     internal class ZoneConverters {
 

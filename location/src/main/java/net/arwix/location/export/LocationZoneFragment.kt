@@ -1,20 +1,24 @@
 package net.arwix.location.export
 
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.*
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import net.arwix.location.ui.zone.LocationZoneAction
 import net.arwix.location.ui.zone.LocationZoneAdapter
 import net.arwix.location.ui.zone.LocationZoneState
 import net.arwix.location.ui.zone.LocationZoneViewModel
 import org.threeten.bp.Instant
 
-class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
+open class LocationZoneFragment : Fragment() {
 
     private lateinit var config: Config
     private lateinit var model: LocationZoneViewModel
@@ -26,33 +30,30 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
 
     data class Config(
         val modelStoreOwner: ViewModelStoreOwner,
-        val lifecycleOwner: LifecycleOwner,
         val locationZoneFactory: ViewModelProvider.Factory,
-        val fragmentManager: FragmentManager,
         val timeZoneInstant: Instant = Instant.now()
     )
 
     fun setup(config: Config) {
         this.config = config
-        adapter = LocationZoneAdapter(scope = this) { zoneId, isAuto ->
-            if (isAuto) model.intent(LocationZoneAction.SelectZoneFormAuto(zoneId))
-            else model.intent(LocationZoneAction.SelectZoneFromList(zoneId))
+        adapter = LocationZoneAdapter(scope = lifecycleScope) { zoneId, isAuto ->
+            if (isAuto) model.nextMergeAction(LocationZoneAction.SelectZoneFormAuto(zoneId))
+            else model.nextMergeAction(LocationZoneAction.SelectZoneFromList(zoneId))
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    fun onCreate() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         model = ViewModelProvider(
             config.modelStoreOwner,
             config.locationZoneFactory
         ).get(LocationZoneViewModel::class.java)
-        model.liveState.observe(config.lifecycleOwner, ::render)
-        model.nonCancelableIntent(LocationZoneAction.Init)
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
-        cancel()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        model.state.onEach(::render).launchIn(viewLifecycleOwner.lifecycleScope)
+//        model.nextSyncAction(LocationZoneAction.Init)
     }
 
     fun getAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder> = adapter
@@ -62,19 +63,20 @@ class LocationZoneFeature : LifecycleObserver, CoroutineScope by MainScope() {
     }
 
     private fun render(state: LocationZoneState) {
+        Log.e("render", state.data.toString())
         state.listZones?.run {
             adapter.setList(state.listZones)
         }
         state.autoZone?.also { autoZone ->
-            adapter.setAutoState(autoZone, state.selectZoneId == null)
+            adapter.setAutoState(autoZone, state.data == null)
         }
         _submitState.value = state.finishStepAvailable
-        val selected = state.selectZoneId ?: return
+        val selected = state.data ?: return
         isSelected = true
-        if (selected.fromAuto) {
+        if (selected.isAutoZone) {
             adapter.selectAuto()
         } else {
-            adapter.select(selected.zoneId)
+            adapter.select(selected.zone)
         }
     }
 

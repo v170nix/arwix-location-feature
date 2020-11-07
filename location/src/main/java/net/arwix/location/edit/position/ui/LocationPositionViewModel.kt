@@ -27,18 +27,16 @@ class LocationPositionViewModel(
     private var geocodeJob: Job? = null
 
     init {
-        editUseCase.initEditingFlow
-            .onEach {
-                if (it == null) nextResult(LocationPositionResult.InitData(null))
-                else nextResult(
-                    LocationPositionResult.InitData(
-                        EditLocationData.createFromLTZData(
-                            it
-                        )
+        editUseCase.initEditingFlow.onEach {
+            if (it == null) nextResult(LocationPositionResult.InitData(null))
+            else nextResult(
+                LocationPositionResult.InitData(
+                    EditLocationData.createFromLTZData(
+                        it
                     )
                 )
-            }
-            .launchIn(viewModelScope)
+            )
+        }.launchIn(viewModelScope)
     }
 
     override suspend fun dispatchAction(

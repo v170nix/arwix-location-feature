@@ -5,34 +5,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_location_zone.*
 import kotlinx.android.synthetic.main.merge_location_prev_next_bar.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import net.arwix.location.export.LocationZoneFeature
+import net.arwix.location.export.LocationZoneFragment
 
 
-class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
-
-    private lateinit var locationZoneFeature: LocationZoneFeature
+class LocationZoneFragment : LocationZoneFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        locationZoneFeature = LocationZoneFeature()
-        locationZoneFeature.setup(
-            LocationZoneFeature.Config(
+        setup(
+            Config(
                 modelStoreOwner = this,
-                lifecycleOwner = this,
-                fragmentManager = parentFragmentManager,
                 locationZoneFactory = (requireContext().applicationContext as AppApplication).getLocationZoneFactory()
             )
         )
-        lifecycle.addObserver(locationZoneFeature)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,10 +43,10 @@ class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
         with(location_time_zone_list) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            adapter = locationZoneFeature.getAdapter()
+            adapter = this@LocationZoneFragment.getAdapter()
         }
-        launch {
-            locationZoneFeature.submitState.collect {
+        viewLifecycleOwner.lifecycleScope.launch {
+            submitState.collect {
                 location_next_button.isEnabled = it
             }
         }
@@ -62,8 +54,8 @@ class LocationZoneFragment : Fragment(), CoroutineScope by MainScope() {
             requireActivity().supportFragmentManager.popBackStack()
         }
         location_next_button.setOnClickListener {
-            launch {
-                locationZoneFeature.doSubmitLocation()
+            viewLifecycleOwner.lifecycleScope.launch {
+                doSubmitLocation()
                 requireActivity().supportFragmentManager.popBackStack(
                     null,
                     POP_BACK_STACK_INCLUSIVE

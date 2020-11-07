@@ -54,8 +54,8 @@ class LocationListAdapter(
     }
 
     fun setData(newData: List<LocationTimeZoneData>, autoState: AutoState) {
-        val autoItem = newData.find { it.isAuto }
-        val customData = newData.filter { !it.isAuto }
+        val autoItem = newData.find { it.isAutoLocation }
+        val customData = newData.filter { !it.isAutoLocation }
         val data = mutableListOf<Item>().apply {
             if (autoState is AutoState.Allow && autoItem != null) {
                 add(Item.Auto(autoState.copy(autoItem)))

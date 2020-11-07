@@ -254,7 +254,7 @@ class LocationListViewModel(
         ): Boolean {
             list ?: return false
             val selectedItem = list.find { it.isSelected } ?: return false
-            if (!selectedItem.isAuto) return true
+            if (!selectedItem.isAutoLocation) return true
             return autoItem is LocationListResult.AutoItem.Success
         }
 
@@ -264,7 +264,7 @@ class LocationListViewModel(
         ): Boolean {
             list ?: return false
             val selectedItem = list.find { it.isSelected } ?: return false
-            if (!selectedItem.isAuto) return true
+            if (!selectedItem.isAutoLocation) return true
             return permission is LocationListState.LocationPermission.Allow
         }
 

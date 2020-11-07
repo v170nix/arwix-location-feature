@@ -21,7 +21,9 @@ class AppApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         AndroidThreeTen.init(this)
-        db = Room.databaseBuilder(this, LocationDatabase::class.java, "location-db").build()
+        db = Room.databaseBuilder(this, LocationDatabase::class.java, "location-db")
+            .fallbackToDestructiveMigration()
+            .build()
         val editRepository =
             LocationCreateEditUseCase(db.recordDao())
         val geocoderRepository = GeocoderRepository(this)
