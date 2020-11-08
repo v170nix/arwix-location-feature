@@ -26,6 +26,9 @@ abstract class LocationDao {
     @Query("SELECT * FROM location_tz_table WHERE isSelected = 1 LIMIT 1")
     abstract suspend fun getSelectedItem(): LocationTimeZoneData?
 
+    @Query("SELECT * FROM location_tz_table WHERE isSelected = 1 LIMIT 1")
+    abstract suspend fun getSelectedItemAsFlow(): Flow<LocationTimeZoneData>
+
     @Transaction
     open suspend fun selectCustomItem(data: LocationTimeZoneData) {
         allDeselect()
