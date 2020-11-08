@@ -7,16 +7,16 @@ import org.threeten.bp.ZoneId
 
 data class LocationZoneState(
     val listZones: List<TimeZoneDisplayEntry>? = null,
-    val autoZone: AutoZone? = null,
-    val data: EditZoneData? = null,
+    val autoZoneStatus: AutoZoneStatus? = null,
+    val selectedData: EditZoneData? = null,
 //    val selectZoneId: SelectZoneId? = null,
     val finishStepAvailable: Boolean = false
 ) {
 //    data class SelectZoneId(val zoneId: ZoneId, val fromAuto: Boolean)
 
-    sealed class AutoZone {
-        data class Loading(val latLng: LatLng) : AutoZone()
-        data class Ok(val latLng: LatLng, val data: ZoneId) : AutoZone()
-        data class Error(val latLng: LatLng, val error: Throwable) : AutoZone()
+    sealed class AutoZoneStatus {
+        data class Loading(val latLng: LatLng) : AutoZoneStatus()
+        data class Ok(val latLng: LatLng, val data: ZoneId) : AutoZoneStatus()
+        data class Error(val latLng: LatLng, val error: Throwable) : AutoZoneStatus()
     }
 }

@@ -3,6 +3,7 @@ package net.arwix.location.export
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
@@ -157,9 +158,11 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
     override fun onDestroyView() {
         super.onDestroyView()
         googleMap = null
+        markerStateFlow.value = null
     }
 
     private fun render(state: LocationPositionState) {
+        Log.e("location render", state.toString())
         when (state.error) {
             is LocationPositionState.ErrorState.PlaceLatLng -> {
             }
@@ -190,6 +193,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
             editText?.setText(state.data.latLng.longitude.toString())
         }
         if (state.updateMapAfterChangeLocation) {
+            Log.e("marker", state.data.latLng.toString())
             markerStateFlow.value = state.data.latLng to state.data.cameraPosition
 //            markerChannel.offer(state.subData.latLng to state.subData.cameraPosition)
         }
@@ -219,6 +223,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         markerStateFlow
             .filterNotNull()
             .onEach { (latLng, position) ->
+                Log.e("marker each", latLng.toString())
                 googleMap?.run {
                     clear()
                     addMarker(MarkerOptions().position(latLng))
@@ -240,6 +245,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
             }
             .launchIn(lifecycleScope)
     }
+
 
     private fun actionFromInput() {
         val lat = inputView.latitudeInputLayout.editText?.text.toString().toDoubleOrNull()

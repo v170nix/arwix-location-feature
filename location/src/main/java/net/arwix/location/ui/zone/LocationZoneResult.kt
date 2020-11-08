@@ -12,5 +12,5 @@ sealed class LocationZoneResult {
     data class AutoZoneOk(val latLng: LatLng, val data: ZoneId) : LocationZoneResult()
     data class AutoZoneError(val latLng: LatLng, val error: Throwable) : LocationZoneResult()
     data class SelectZone(val data: EditZoneData) : LocationZoneResult()
-    object ClearZone : LocationZoneResult()
+//    object ClearZone : LocationZoneResult()
 }

@@ -25,6 +25,13 @@ class LocationZoneViewModel(
     private var previousLatLng: LatLng? = null
 
     init {
+//        editUseCase.editZoneFlow
+//            .filterNotNull()
+//            .onEach {
+//                nextResult(LocationZoneResult.InitData(it))
+//                updateAutoZone(it.latLng)
+//            }.launchIn(viewModelScope)
+
         editUseCase.initEditingFlow.onEach {
             if (it == null) {
                 // add
@@ -32,18 +39,20 @@ class LocationZoneViewModel(
 //                nextMergeAction(LocationZoneAction.LoadZoneList)
             } else {
                 // edit
-                val data = EditZoneData.createFromLTZData(it)
+                val latLng = editUseCase.editLocationFlow.value?.latLng
+                val data = EditZoneData.createFromLTZData(it).let { ezd ->
+                    if (latLng != null) ezd.copy(latLng = latLng) else ezd
+                }
+
                 nextResult(LocationZoneResult.InitData(data))
-                autoZone(data.latLng)
+                updateAutoZone(data.latLng)
 //                nextMergeAction(LocationZoneAction.LoadZoneList)
             }
 
         }.launchIn(viewModelScope)
 
         editUseCase.editLocationFlow.onEach {
-//            if (it == null || previousLatLng != it.latLng)
-//                nextResult(LocationZoneResult.ClearZone)
-            if (it != null && it.latLng != previousLatLng) autoZone(it.latLng)
+            if (it != null && it.latLng != previousLatLng) updateAutoZone(it.latLng)
             previousLatLng = it?.latLng
         }.launchIn(viewModelScope)
 //        nextMergeAction(LocationZoneAction.Init)
@@ -68,7 +77,7 @@ class LocationZoneViewModel(
 //                    autoZone(action.latLng)
 //                }
                 is LocationZoneAction.SelectZoneFormAuto -> {
-                    val currentData = state.value.data ?: return@flow
+                    val currentData = state.value.selectedData ?: return@flow
                     emit(
                         LocationZoneResult.SelectZone(
                             EditZoneData(action.zone, true, currentData.latLng)
@@ -76,7 +85,7 @@ class LocationZoneViewModel(
                     )
                 }
                 is LocationZoneAction.SelectZoneFromList -> {
-                    val currentData = state.value.data ?: return@flow
+                    val currentData = state.value.selectedData ?: return@flow
                     emit(
                         LocationZoneResult.SelectZone(
                             EditZoneData(action.zone, false, currentData.latLng)
@@ -86,11 +95,11 @@ class LocationZoneViewModel(
             }
         }
 
-    private fun autoZone(inLatLng: LatLng) {
+    private fun updateAutoZone(inLatLng: LatLng) {
         viewModelScope.launch {
             val intState = state.value
-            if (intState.autoZone is LocationZoneState.AutoZone.Ok &&
-                intState.autoZone.latLng == inLatLng
+            if (intState.autoZoneStatus is LocationZoneState.AutoZoneStatus.Ok &&
+                intState.autoZoneStatus.latLng == inLatLng
             ) return@launch
             nextResult(LocationZoneResult.AutoZoneLoading(inLatLng))
             runCatching {
@@ -110,44 +119,56 @@ class LocationZoneViewModel(
         Log.e("result", result.toString())
         return when (result) {
             is LocationZoneResult.InitData -> {
-                state.copy(data = result.data)
+                state.copy(
+                    selectedData = result.data,
+                    finishStepAvailable = result.data != null
+                )
             }
             is LocationZoneResult.Zones -> {
                 state.copy(listZones = result.list)
             }
             is LocationZoneResult.AutoZoneLoading -> {
-                val isAutoZone = state.data?.isAutoZone ?: false
+                val isAutoZone = state.selectedData?.isAutoZone ?: false
                 state.copy(
-                    autoZone = LocationZoneState.AutoZone.Loading(result.latLng),
+                    autoZoneStatus = LocationZoneState.AutoZoneStatus.Loading(result.latLng),
                     finishStepAvailable = if (isAutoZone) false else state.finishStepAvailable
                 )
             }
             is LocationZoneResult.AutoZoneOk -> {
+                val selectedData =
+                    state.selectedData ?: EditZoneData(result.data, true, result.latLng)
                 state.copy(
-                    data = state.data ?: EditZoneData(result.data, true, result.latLng),
-                    autoZone = LocationZoneState.AutoZone.Ok(result.latLng, result.data)
+                    selectedData = selectedData,
+                    autoZoneStatus = LocationZoneState.AutoZoneStatus.Ok(
+                        result.latLng,
+                        result.data
+                    ),
+                    finishStepAvailable = if (selectedData.isAutoZone) true else state.finishStepAvailable
                 )
             }
             is LocationZoneResult.AutoZoneError -> {
                 state.copy(
-                    autoZone = LocationZoneState.AutoZone.Error(result.latLng, result.error)
+                    autoZoneStatus = LocationZoneState.AutoZoneStatus.Error(
+                        result.latLng,
+                        result.error
+                    )
                 )
             }
             is LocationZoneResult.SelectZone -> {
                 state.copy(
-                    data = result.data,
+                    selectedData = result.data,
                     finishStepAvailable = true
                 )
             }
-            is LocationZoneResult.ClearZone -> {
-                state.copy(
-                    autoZone = null,
-                    data = null,
-                    finishStepAvailable = false
-                )
-            }
+//            is LocationZoneResult.ClearZone -> {
+//                state.copy(
+//                    autoZoneStatus = null,
+//                    selectedData = null,
+//                    finishStepAvailable = false
+//                )
+//            }
         }.also {
-            editUseCase.timeZoneData.postValue(it.data?.zone)
+            editUseCase.updateZone(it.selectedData)
         }
     }
 

@@ -53,7 +53,6 @@ open class LocationZoneFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         model.state.onEach(::render).launchIn(viewLifecycleOwner.lifecycleScope)
-//        model.nextSyncAction(LocationZoneAction.Init)
     }
 
     fun getAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder> = adapter
@@ -63,15 +62,15 @@ open class LocationZoneFragment : Fragment() {
     }
 
     private fun render(state: LocationZoneState) {
-        Log.e("render", state.data.toString())
+        Log.e("render", state.selectedData.toString() + " " + state.finishStepAvailable)
         state.listZones?.run {
             adapter.setList(state.listZones)
         }
-        state.autoZone?.also { autoZone ->
-            adapter.setAutoState(autoZone, state.data == null)
+        state.autoZoneStatus?.also { autoZone ->
+            adapter.setAutoState(autoZone, state.selectedData == null)
         }
         _submitState.value = state.finishStepAvailable
-        val selected = state.data ?: return
+        val selected = state.selectedData ?: return
         isSelected = true
         if (selected.isAutoZone) {
             adapter.selectAuto()

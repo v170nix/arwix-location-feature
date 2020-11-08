@@ -42,7 +42,7 @@ class LocationZoneAdapter(
         val id = items.indexOf(item)
         if (id != selectionId && (item is Item.Auto)) {
             val state = autoState
-            if (state !is LocationZoneState.AutoZone.Ok) return@OnClickListener
+            if (state !is LocationZoneState.AutoZoneStatus.Ok) return@OnClickListener
             listener?.invoke(state.data, true)
         }
     }
@@ -51,17 +51,17 @@ class LocationZoneAdapter(
         setHasStableIds(true)
     }
 
-    private var autoState: LocationZoneState.AutoZone? = null
+    private var autoState: LocationZoneState.AutoZoneStatus? = null
 
     fun setAutoState(
-        newAutoState: LocationZoneState.AutoZone,
+        newAutoState: LocationZoneState.AutoZoneStatus,
         isAutomaticSelected: Boolean
     ) {
         if (autoState == newAutoState) return
         autoState = newAutoState
         if (isAutomaticSelected &&
             selectionId == -1 &&
-            newAutoState is LocationZoneState.AutoZone.Ok
+            newAutoState is LocationZoneState.AutoZoneStatus.Ok
         ) {
             listener?.invoke(newAutoState.data, true)
         }
@@ -190,7 +190,7 @@ class LocationZoneAdapter(
         private val resultThreeText: TextView = view.location_time_zone_item_auto_three_text
         private val resultErrorText: TextView = view.location_time_zone_item_auto_error_text
 
-        var currentStatus: LocationZoneState.AutoZone? = null
+        var currentStatus: LocationZoneState.AutoZoneStatus? = null
         private val weakResultLayout: WeakReference<ViewGroup> = resultLayout.weak()
 
         init {
@@ -198,12 +198,13 @@ class LocationZoneAdapter(
             loadingProgressBar.gone()
         }
 
-        suspend fun doResult(result: LocationZoneState.AutoZone) = withContext(Dispatchers.Main) {
-            if (currentStatus == result) return@withContext
-            if (result !is LocationZoneState.AutoZone.Ok) deselect()
-            consumeAction(result)
-            currentStatus = result
-        }
+        suspend fun doResult(result: LocationZoneState.AutoZoneStatus) =
+            withContext(Dispatchers.Main) {
+                if (currentStatus == result) return@withContext
+                if (result !is LocationZoneState.AutoZoneStatus.Ok) deselect()
+                consumeAction(result)
+                currentStatus = result
+            }
 
         fun deselect() {
             view.isActivated = false
@@ -213,14 +214,14 @@ class LocationZoneAdapter(
             view.isActivated = true
         }
 
-        private suspend fun consumeAction(status: LocationZoneState.AutoZone) {
+        private suspend fun consumeAction(status: LocationZoneState.AutoZoneStatus) {
             when (status) {
-                is LocationZoneState.AutoZone.Loading -> {
+                is LocationZoneState.AutoZoneStatus.Loading -> {
                     resultLayout.background = null
                     beginLoading()
                 }
                 else -> {
-                    if (currentStatus is LocationZoneState.AutoZone.Loading) {
+                    if (currentStatus is LocationZoneState.AutoZoneStatus.Loading) {
                         delay(300L)
                     }
                     if (currentStatus != null) {
@@ -238,7 +239,7 @@ class LocationZoneAdapter(
                         resultLayout.alpha = 1f
                     }
 
-                    if (status is LocationZoneState.AutoZone.Ok) {
+                    if (status is LocationZoneState.AutoZoneStatus.Ok) {
                         beginViewOk()
                         resultLayout.setBackgroundResource(R.drawable.location_selected_list_item)
                         val instant = Instant.now()
@@ -248,7 +249,7 @@ class LocationZoneAdapter(
                         resultThreeText.text =
                             TimeZoneRepository.getGmtOffsetText(status.data, instant)
                     }
-                    if (status is LocationZoneState.AutoZone.Error) {
+                    if (status is LocationZoneState.AutoZoneStatus.Error) {
                         beginViewError()
                         resultLayout.background = null
                     }

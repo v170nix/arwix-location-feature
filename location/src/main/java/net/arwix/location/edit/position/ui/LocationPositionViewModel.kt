@@ -1,5 +1,6 @@
 package net.arwix.location.edit.position.ui
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -102,6 +103,7 @@ class LocationPositionViewModel(
         state: LocationPositionState,
         result: LocationPositionResult
     ): LocationPositionState {
+        Log.e("location result", result.toString())
         return when (result) {
             is LocationPositionResult.InitData -> {
                 state.copy(
