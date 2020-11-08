@@ -1,4 +1,4 @@
-package net.arwix.location.ui.zone
+package net.arwix.location.edit.zone.ui
 
 import net.arwix.mvi.FlowViewModel
 import org.threeten.bp.ZoneId

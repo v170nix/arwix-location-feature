@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package net.arwix.location.export
 
 import android.content.Context
@@ -9,10 +11,9 @@ import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.location.edit.position.ui.LocationPositionViewModel
+import net.arwix.location.edit.zone.ui.LocationZoneViewModel
 import net.arwix.location.list.ui.LocationListViewModel
-import net.arwix.location.ui.zone.LocationZoneViewModel
 
-@Suppress("UNCHECKED_CAST")
 fun createLocationListFactory(
     applicationContext: Context,
     dao: LocationDao,

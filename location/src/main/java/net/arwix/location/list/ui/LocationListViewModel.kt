@@ -194,6 +194,9 @@ class LocationListViewModel(
                         editUseCase.edit(action.item)
                     }
                 }
+                is LocationListAction.UndoDeleteItem -> {
+                    dao.insert(action.item)
+                }
             }
         }
     }

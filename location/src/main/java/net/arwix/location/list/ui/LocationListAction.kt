@@ -15,6 +15,7 @@ sealed class LocationListAction : FlowViewModel.Action {
     object UpdateAutoLocation : LocationListAction(), SyncAction
     object CancelUpdateAutoLocation : LocationListAction(), SyncAction
     data class DeleteItem(val item: LocationTimeZoneData) : LocationListAction(), SyncAction
+    data class UndoDeleteItem(val item: LocationTimeZoneData) : LocationListAction(), SyncAction
     data class EditItem(val item: LocationTimeZoneData) : LocationListAction(), SyncAction
     data class SelectFromCustomList(val data: LocationTimeZoneData) : LocationListAction(),
         LatestAction

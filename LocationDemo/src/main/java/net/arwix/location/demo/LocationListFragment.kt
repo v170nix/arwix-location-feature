@@ -82,4 +82,8 @@ class LocationListFragment : LocationListFragment() {
             .addToBackStack(null)
             .commit()
     }
+
+    override fun getContextUndoDeleteView(): View {
+        return location_add_button
+    }
 }

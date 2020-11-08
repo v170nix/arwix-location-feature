@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import net.arwix.location.ui.zone.LocationZoneAction
-import net.arwix.location.ui.zone.LocationZoneAdapter
-import net.arwix.location.ui.zone.LocationZoneState
-import net.arwix.location.ui.zone.LocationZoneViewModel
+import net.arwix.location.edit.zone.ui.LocationZoneAction
+import net.arwix.location.edit.zone.ui.LocationZoneAdapter
+import net.arwix.location.edit.zone.ui.LocationZoneState
+import net.arwix.location.edit.zone.ui.LocationZoneViewModel
 import org.threeten.bp.Instant
 
 open class LocationZoneFragment : Fragment() {

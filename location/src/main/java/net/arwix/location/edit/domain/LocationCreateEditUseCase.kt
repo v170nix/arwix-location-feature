@@ -1,6 +1,5 @@
 package net.arwix.location.edit.domain
 
-import android.util.Log
 import androidx.annotation.UiThread
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,8 +10,9 @@ import net.arwix.location.data.room.LocationTimeZoneData
 import net.arwix.location.edit.data.EditLocationData
 import net.arwix.location.edit.data.EditZoneData
 
+@Suppress("MemberVisibilityCanBePrivate")
 class LocationCreateEditUseCase(
-    val dao: LocationDao
+    private val dao: LocationDao
 ) {
 
     private val _initEditingFlow = MutableSharedFlow<LocationTimeZoneData?>(replay = 1)
@@ -24,29 +24,20 @@ class LocationCreateEditUseCase(
     private val _editZoneFlow = MutableStateFlow<EditZoneData?>(null)
     val editZoneFlow = _editZoneFlow.asStateFlow()
 
-//    private val _isEditData = MutableLiveData<LocationTimeZoneData>()
-//    val isEditData: LiveData<LocationTimeZoneData> = _isEditData
-
-//    val timeZoneData = MutableLiveData<ZoneId>()
-
     @UiThread
     suspend fun create() {
         _initEditingFlow.emit(null)
         _editLocationFlow.value = null
         _editZoneFlow.value = null
-//        timeZoneData.value = null
-//        _isEditData.value = null
     }
 
     suspend fun edit(data: LocationTimeZoneData) {
-//        timeZoneData.postValue(data.zone)
         _editLocationFlow.value = EditLocationData.createFromLTZData(data)
         _editZoneFlow.value = EditZoneData.createFromLTZData(data)
         _initEditingFlow.emit(data)
     }
 
     fun updateLocation(editLocationData: EditLocationData?) {
-        Log.e("updateLocation", editLocationData.toString())
         _editLocationFlow.value = editLocationData
         val editZoneData = _editZoneFlow.value ?: return
         if (editZoneData.latLng != editLocationData?.latLng) {

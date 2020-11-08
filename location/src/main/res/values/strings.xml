@@ -11,4 +11,6 @@
     <string name="location_error_time_zone_auto_find">No time zone data found</string>
     <string name="location_permission_info">For automatically determination of coordinates, permission is needed</string>
     <string name="location_permission_button">Give permission</string>
+    <string name="location_undo_delete_message">Location is deleted</string>
+    <string name="location_undo_delete_button">Undo</string>
 </resources>

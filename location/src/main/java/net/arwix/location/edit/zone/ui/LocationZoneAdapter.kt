@@ -1,4 +1,4 @@
-package net.arwix.location.ui.zone
+package net.arwix.location.edit.zone.ui
 
 import android.view.LayoutInflater
 import android.view.View

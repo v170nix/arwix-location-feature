@@ -1,9 +1,9 @@
-package net.arwix.location.ui.zone
+package net.arwix.location.edit.zone.ui
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
@@ -23,30 +23,21 @@ class LocationZoneViewModel(
 ) : FlowViewModel<LocationZoneAction, LocationZoneResult, LocationZoneState>(LocationZoneState()) {
 
     private var previousLatLng: LatLng? = null
+    @Volatile
+    private var updateAutoLocationJob: Job? = null
 
     init {
-//        editUseCase.editZoneFlow
-//            .filterNotNull()
-//            .onEach {
-//                nextResult(LocationZoneResult.InitData(it))
-//                updateAutoZone(it.latLng)
-//            }.launchIn(viewModelScope)
-
         editUseCase.initEditingFlow.onEach {
             if (it == null) {
-                // add
                 nextResult(LocationZoneResult.InitData(null))
-//                nextMergeAction(LocationZoneAction.LoadZoneList)
             } else {
                 // edit
                 val latLng = editUseCase.editLocationFlow.value?.latLng
                 val data = EditZoneData.createFromLTZData(it).let { ezd ->
                     if (latLng != null) ezd.copy(latLng = latLng) else ezd
                 }
-
                 nextResult(LocationZoneResult.InitData(data))
                 updateAutoZone(data.latLng)
-//                nextMergeAction(LocationZoneAction.LoadZoneList)
             }
 
         }.launchIn(viewModelScope)
@@ -55,18 +46,12 @@ class LocationZoneViewModel(
             if (it != null && it.latLng != previousLatLng) updateAutoZone(it.latLng)
             previousLatLng = it?.latLng
         }.launchIn(viewModelScope)
-//        nextMergeAction(LocationZoneAction.Init)
         nextMergeAction(LocationZoneAction.LoadZoneList)
     }
 
     override suspend fun dispatchAction(action: LocationZoneAction): Flow<LocationZoneResult> =
         flow {
-            Log.e("action", action.toString())
             when (action) {
-//                is LocationZoneAction.Init -> {
-//                    val latLng = editUseCase.editLocationFlow.value?.latLng ?: return@flow
-//                    autoZone(latLng)
-//                }
                 is LocationZoneAction.LoadZoneList -> {
                     val list = withContext(Dispatchers.IO) {
                         zoneRepository.getZonesList()
@@ -96,7 +81,8 @@ class LocationZoneViewModel(
         }
 
     private fun updateAutoZone(inLatLng: LatLng) {
-        viewModelScope.launch {
+        updateAutoLocationJob?.cancel()
+        updateAutoLocationJob = viewModelScope.launch {
             val intState = state.value
             if (intState.autoZoneStatus is LocationZoneState.AutoZoneStatus.Ok &&
                 intState.autoZoneStatus.latLng == inLatLng
@@ -116,7 +102,6 @@ class LocationZoneViewModel(
         state: LocationZoneState,
         result: LocationZoneResult
     ): LocationZoneState {
-        Log.e("result", result.toString())
         return when (result) {
             is LocationZoneResult.InitData -> {
                 state.copy(

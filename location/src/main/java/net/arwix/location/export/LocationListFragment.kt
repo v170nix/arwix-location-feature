@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -82,6 +83,17 @@ abstract class LocationListFragment : Fragment() {
                 navigateToEditItemFragment()
             },
             onDeleteListener = {
+                Snackbar
+                    .make(
+                        requireView(),
+                        R.string.location_undo_delete_message,
+                        Snackbar.LENGTH_LONG
+                    )
+                    .setAnchorView(getContextUndoDeleteView())
+                    .setAction(R.string.location_undo_delete_button) { r: View ->
+                        model.nextSyncAction(LocationListAction.UndoDeleteItem(it))
+                    }
+                    .show()
                 model.nextSyncAction(LocationListAction.DeleteItem(it))
             }
         )
@@ -103,6 +115,7 @@ abstract class LocationListFragment : Fragment() {
     fun getAdapter() = adapter
 
     abstract fun navigateToEditItemFragment()
+    abstract fun getContextUndoDeleteView(): View
 
     fun doAddLocation() {
         lifecycleScope.launch {
