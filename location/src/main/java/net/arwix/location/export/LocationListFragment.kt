@@ -82,7 +82,7 @@ abstract class LocationListFragment : Fragment() {
                 model.nextSyncAction(LocationListAction.EditItem(it))
                 navigateToEditItemFragment()
             },
-            onDeleteListener = {
+            onDeleteListener = { item ->
                 Snackbar
                     .make(
                         requireView(),
@@ -90,11 +90,11 @@ abstract class LocationListFragment : Fragment() {
                         Snackbar.LENGTH_LONG
                     )
                     .setAnchorView(getContextUndoDeleteView())
-                    .setAction(R.string.location_undo_delete_button) { r: View ->
-                        model.nextSyncAction(LocationListAction.UndoDeleteItem(it))
+                    .setAction(R.string.location_undo_delete_button) {
+                        model.nextSyncAction(LocationListAction.UndoDeleteItem(item))
                     }
                     .show()
-                model.nextSyncAction(LocationListAction.DeleteItem(it))
+                model.nextSyncAction(LocationListAction.DeleteItem(item))
             }
         )
     }
