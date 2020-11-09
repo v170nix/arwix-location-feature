@@ -105,14 +105,17 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         }
         config.mapFragment.getMapAsync(this)
 
-        val googleLogo = config.mapFragment.requireView().findViewWithTag<View>("GoogleWatermark")
-        val glLayoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, 0)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
-        glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
-        googleLogo.layoutParams = glLayoutParams
+        runCatching {
+            val googleLogo =
+                config.mapFragment.requireView().findViewWithTag<View>("GoogleWatermark")
+            val glLayoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
+            glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
+            glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0)
+            glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, 0)
+            glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+            glLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
+            googleLogo.layoutParams = glLayoutParams
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
