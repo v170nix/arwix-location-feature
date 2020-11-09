@@ -3,10 +3,12 @@ package net.arwix.location.data
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZonedDateTime
+//import org.threeten.bp.ZoneId
+//import org.threeten.bp.ZonedDateTime
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class TimeZoneGoogleRepository(private val key: String) {
 

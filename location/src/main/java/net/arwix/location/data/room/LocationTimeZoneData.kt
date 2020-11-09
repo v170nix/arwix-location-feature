@@ -2,7 +2,9 @@ package net.arwix.location.data.room
 
 import androidx.room.*
 import com.google.android.gms.maps.model.LatLng
-import org.threeten.bp.ZoneId
+import java.time.ZoneId
+
+//import org.threeten.bp.ZoneId
 
 @Entity(tableName = "location_tz_table")
 @TypeConverters(LocationTimeZoneData.ZoneConverters::class)

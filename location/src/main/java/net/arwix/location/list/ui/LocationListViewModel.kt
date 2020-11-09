@@ -14,7 +14,9 @@ import net.arwix.location.domain.LocationHelper
 import net.arwix.location.domain.LocationPermissionHelper
 import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.mvi.FlowViewModel
-import org.threeten.bp.ZoneId
+import java.time.ZoneId
+
+//import org.threeten.bp.ZoneId
 
 class LocationListViewModel(
     private val applicationContext: Context,

@@ -7,7 +7,9 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
 import net.arwix.location.data.getSubTitle
 import net.arwix.location.data.getTitle
-import org.threeten.bp.ZoneId
+import java.time.ZoneId
+
+//import org.threeten.bp.ZoneId
 
 @Dao
 abstract class LocationDao {

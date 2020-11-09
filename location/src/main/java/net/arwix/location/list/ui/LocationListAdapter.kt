@@ -16,7 +16,8 @@ import net.arwix.location.common.extension.latToString
 import net.arwix.location.common.extension.lngToString
 import net.arwix.location.data.TimeZoneRepository
 import net.arwix.location.data.room.LocationTimeZoneData
-import org.threeten.bp.Instant
+//import org.threeten.bp.Instant
+import java.time.Instant
 
 class LocationListAdapter(
     private val instant: Instant,

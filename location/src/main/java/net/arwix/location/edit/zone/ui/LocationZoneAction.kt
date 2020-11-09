@@ -1,7 +1,8 @@
 package net.arwix.location.edit.zone.ui
 
 import net.arwix.mvi.FlowViewModel
-import org.threeten.bp.ZoneId
+//import org.threeten.bp.ZoneId
+import java.time.ZoneId
 
 sealed class LocationZoneAction : FlowViewModel.Action {
     object LoadZoneList : LocationZoneAction(), FlowViewModel.MergeAction

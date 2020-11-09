@@ -6,7 +6,8 @@ import com.google.android.gms.maps.model.LatLng
 import net.arwix.location.data.getSubTitle
 import net.arwix.location.data.getTitle
 import net.arwix.location.data.room.LocationTimeZoneData
-import org.threeten.bp.ZoneId
+//import org.threeten.bp.ZoneId
+import java.time.ZoneId
 
 sealed class LocationListResult {
 

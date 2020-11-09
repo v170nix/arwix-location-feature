@@ -1,16 +1,20 @@
 package net.arwix.location.data
 
+//import org.threeten.bp.DateTimeUtils
+//import org.threeten.bp.Instant
+//import org.threeten.bp.ZoneId
+//import org.threeten.bp.ZonedDateTime
+//import org.threeten.bp.format.DateTimeFormatter
 import android.content.Context
 import android.icu.text.TimeZoneNames
 import android.os.Build
 import androidx.annotation.RequiresApi
 import net.arwix.location.R
-import org.threeten.bp.DateTimeUtils
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.format.DateTimeFormatter
 import org.xmlpull.v1.XmlPullParser
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.regex.Pattern
 
@@ -69,12 +73,13 @@ class TimeZoneRepository(private val applicationContext: Context) {
         }
 
         fun getName(zoneId: ZoneId): String {
-            val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                getName(TimeZoneNames.getInstance(Locale.getDefault()), zoneId)
-                    ?: getDefaultExemplarLocationName(zoneId.id)
-            } else {
-                getDefaultExemplarLocationName(zoneId.id)
-            }
+            val name =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    getName(TimeZoneNames.getInstance(Locale.getDefault()), zoneId)
+                        ?: getDefaultExemplarLocationName(zoneId.id)
+                } else {
+                    getDefaultExemplarLocationName(zoneId.id)
+                }
             return name ?: ""
         }
 
@@ -105,11 +110,11 @@ class TimeZoneRepository(private val applicationContext: Context) {
         ): String? {
             val nameType =
                 if (isLight) TimeZoneNames.NameType.LONG_DAYLIGHT else TimeZoneNames.NameType.LONG_STANDARD
-            return names.getDisplayName(zoneId.id, nameType, DateTimeUtils.toDate(now).time)
+            return names.getDisplayName(zoneId.id, nameType, Date.from(now).time)
                 ?: names.getDisplayName(
                     getCanonicalID(zoneId),
                     nameType,
-                    DateTimeUtils.toDate(now).time
+                    Date.from(now).time
                 )
         }
 

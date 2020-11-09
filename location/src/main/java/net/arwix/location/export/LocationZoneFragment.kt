@@ -16,7 +16,8 @@ import net.arwix.location.edit.zone.ui.LocationZoneAction
 import net.arwix.location.edit.zone.ui.LocationZoneAdapter
 import net.arwix.location.edit.zone.ui.LocationZoneState
 import net.arwix.location.edit.zone.ui.LocationZoneViewModel
-import org.threeten.bp.Instant
+//import org.threeten.bp.Instant
+import java.time.Instant
 
 open class LocationZoneFragment : Fragment() {
 

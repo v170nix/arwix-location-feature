@@ -2,7 +2,9 @@ package net.arwix.location.data
 
 import android.os.Build
 import com.google.gson.annotations.SerializedName
-import org.threeten.bp.ZoneId
+import java.time.ZoneId
+
+//import org.threeten.bp.ZoneId
 
 data class TimeZoneGoogleData(
     val dstOffset: Long,

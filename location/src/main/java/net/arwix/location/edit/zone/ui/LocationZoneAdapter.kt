@@ -17,9 +17,11 @@ import net.arwix.extension.weak
 import net.arwix.location.R
 import net.arwix.location.data.TimeZoneDisplayEntry
 import net.arwix.location.data.TimeZoneRepository
-import org.threeten.bp.Instant
-import org.threeten.bp.ZoneId
+//import org.threeten.bp.Instant
+//import org.threeten.bp.ZoneId
 import java.lang.ref.WeakReference
+import java.time.Instant
+import java.time.ZoneId
 
 class LocationZoneAdapter(
     private val scope: CoroutineScope,

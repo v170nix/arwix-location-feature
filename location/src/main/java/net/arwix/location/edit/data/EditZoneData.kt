@@ -2,7 +2,8 @@ package net.arwix.location.edit.data
 
 import com.google.android.gms.maps.model.LatLng
 import net.arwix.location.data.room.LocationTimeZoneData
-import org.threeten.bp.ZoneId
+//import org.threeten.bp.ZoneId
+import java.time.ZoneId
 
 data class EditZoneData(
     val zone: ZoneId,

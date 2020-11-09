@@ -3,7 +3,7 @@ package net.arwix.location.demo
 import android.app.Application
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
-import com.jakewharton.threetenabp.AndroidThreeTen
+//import com.jakewharton.threetenabp.AndroidThreeTen
 import net.arwix.location.data.GeocoderRepository
 import net.arwix.location.data.TimeZoneGoogleRepository
 import net.arwix.location.data.TimeZoneRepository
@@ -20,7 +20,7 @@ class AppApplication : Application() {
     private lateinit var locationZoneFactory: ViewModelProvider.Factory
     override fun onCreate() {
         super.onCreate()
-        AndroidThreeTen.init(this)
+//        AndroidThreeTen.init(this)
         db = Room.databaseBuilder(this, LocationDatabase::class.java, "location-db")
             .fallbackToDestructiveMigration()
             .build()

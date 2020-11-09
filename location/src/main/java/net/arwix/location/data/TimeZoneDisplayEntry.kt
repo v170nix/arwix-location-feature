@@ -1,7 +1,10 @@
 package net.arwix.location.data
 
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZoneOffset
+import java.time.ZoneId
+import java.time.ZoneOffset
+
+//import org.threeten.bp.ZoneId
+//import org.threeten.bp.ZoneOffset
 
 data class TimeZoneDisplayEntry(
     val id: ZoneId,
