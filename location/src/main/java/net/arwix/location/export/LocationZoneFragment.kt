@@ -1,7 +1,7 @@
 package net.arwix.location.export
 
+//import org.threeten.bp.Instant
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -16,7 +16,6 @@ import net.arwix.location.edit.zone.ui.LocationZoneAction
 import net.arwix.location.edit.zone.ui.LocationZoneAdapter
 import net.arwix.location.edit.zone.ui.LocationZoneState
 import net.arwix.location.edit.zone.ui.LocationZoneViewModel
-//import org.threeten.bp.Instant
 import java.time.Instant
 
 open class LocationZoneFragment : Fragment() {
@@ -63,7 +62,6 @@ open class LocationZoneFragment : Fragment() {
     }
 
     private fun render(state: LocationZoneState) {
-        Log.e("render", state.selectedData.toString() + " " + state.finishStepAvailable)
         state.listZones?.run {
             adapter.setList(state.listZones)
         }
