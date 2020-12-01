@@ -24,8 +24,6 @@ import net.arwix.location.list.ui.LocationListState
 import net.arwix.location.list.ui.LocationListViewModel
 import java.time.Instant
 
-//import org.threeten.bp.Instant
-
 abstract class LocationListFragment : Fragment() {
 
     @Suppress("ArrayInDataClass")
