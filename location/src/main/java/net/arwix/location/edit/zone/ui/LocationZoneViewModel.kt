@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.arwix.location.data.TimeZoneGoogleRepository
-import net.arwix.location.data.TimeZoneRepository
+import net.arwix.location.data.gtimezone.TimeZoneGoogleRepository
+import net.arwix.location.data.gtimezone.TimeZoneRepository
 import net.arwix.location.edit.data.EditZoneData
 import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.mvi.FlowViewModel

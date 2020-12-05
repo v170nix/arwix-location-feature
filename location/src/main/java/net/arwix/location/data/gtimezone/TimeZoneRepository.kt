@@ -1,4 +1,4 @@
-package net.arwix.location.data
+package net.arwix.location.data.gtimezone
 
 //import org.threeten.bp.DateTimeUtils
 //import org.threeten.bp.Instant

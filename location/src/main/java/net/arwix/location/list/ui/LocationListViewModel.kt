@@ -92,7 +92,7 @@ class LocationListViewModel(
             val location = LocationHelper.getLocation(applicationContext, flagUpdate)
             if (location != null) {
                 val zoneId = ZoneId.systemDefault()
-                dao.updateAutoItem(location, ZoneId.systemDefault())
+                dao.updateAutoItem(location, zoneId)
                 nextResult(
                     LocationListResult.AutoLocation(
                         LocationListResult.AutoItem.Success(

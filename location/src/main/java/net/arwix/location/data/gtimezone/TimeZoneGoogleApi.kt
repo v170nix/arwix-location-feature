@@ -1,4 +1,4 @@
-package net.arwix.location.data
+package net.arwix.location.data.gtimezone
 
 import retrofit2.http.GET
 import retrofit2.http.Query

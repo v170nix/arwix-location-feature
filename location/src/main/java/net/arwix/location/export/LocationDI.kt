@@ -6,8 +6,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import net.arwix.location.data.GeocoderRepository
-import net.arwix.location.data.TimeZoneGoogleRepository
-import net.arwix.location.data.TimeZoneRepository
+import net.arwix.location.data.gtimezone.TimeZoneGoogleRepository
+import net.arwix.location.data.gtimezone.TimeZoneRepository
 import net.arwix.location.data.room.LocationDao
 import net.arwix.location.edit.domain.LocationCreateEditUseCase
 import net.arwix.location.edit.position.ui.LocationPositionViewModel

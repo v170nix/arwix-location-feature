@@ -14,7 +14,7 @@ import net.arwix.extension.visible
 import net.arwix.location.R
 import net.arwix.location.common.extension.latToString
 import net.arwix.location.common.extension.lngToString
-import net.arwix.location.data.TimeZoneRepository
+import net.arwix.location.data.gtimezone.TimeZoneRepository
 import net.arwix.location.data.room.LocationTimeZoneData
 //import org.threeten.bp.Instant
 import java.time.Instant

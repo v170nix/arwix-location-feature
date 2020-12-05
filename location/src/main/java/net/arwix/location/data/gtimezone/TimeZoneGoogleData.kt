@@ -1,4 +1,4 @@
-package net.arwix.location.data
+package net.arwix.location.data.gtimezone
 
 import android.os.Build
 import com.google.gson.annotations.SerializedName

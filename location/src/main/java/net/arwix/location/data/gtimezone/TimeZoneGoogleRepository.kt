@@ -1,4 +1,4 @@
-package net.arwix.location.data
+package net.arwix.location.data.gtimezone
 
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers

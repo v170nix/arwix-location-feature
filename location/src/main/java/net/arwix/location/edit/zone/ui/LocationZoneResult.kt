@@ -1,7 +1,7 @@
 package net.arwix.location.edit.zone.ui
 
 import com.google.android.gms.maps.model.LatLng
-import net.arwix.location.data.TimeZoneDisplayEntry
+import net.arwix.location.data.gtimezone.TimeZoneDisplayEntry
 import net.arwix.location.edit.data.EditZoneData
 //import org.threeten.bp.ZoneId
 import java.time.ZoneId

@@ -15,8 +15,8 @@ import net.arwix.extension.invisible
 import net.arwix.extension.visible
 import net.arwix.extension.weak
 import net.arwix.location.R
-import net.arwix.location.data.TimeZoneDisplayEntry
-import net.arwix.location.data.TimeZoneRepository
+import net.arwix.location.data.gtimezone.TimeZoneDisplayEntry
+import net.arwix.location.data.gtimezone.TimeZoneRepository
 //import org.threeten.bp.Instant
 //import org.threeten.bp.ZoneId
 import java.lang.ref.WeakReference

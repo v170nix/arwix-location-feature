@@ -1,4 +1,4 @@
-package net.arwix.location.data
+package net.arwix.location.data.gtimezone
 
 import java.time.ZoneId
 import java.time.ZoneOffset
