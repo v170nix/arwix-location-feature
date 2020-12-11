@@ -1,5 +1,7 @@
 package net.arwix.location.edit.zone.ui
 
+//import org.threeten.bp.Instant
+//import org.threeten.bp.ZoneId
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,8 +19,6 @@ import net.arwix.extension.weak
 import net.arwix.location.R
 import net.arwix.location.data.gtimezone.TimeZoneDisplayEntry
 import net.arwix.location.data.gtimezone.TimeZoneRepository
-//import org.threeten.bp.Instant
-//import org.threeten.bp.ZoneId
 import java.lang.ref.WeakReference
 import java.time.Instant
 import java.time.ZoneId
@@ -66,6 +66,10 @@ class LocationZoneAdapter(
             newAutoState is LocationZoneState.AutoZoneStatus.Ok
         ) {
             listener?.invoke(newAutoState.data, true)
+        } else {
+            if (!isAutomaticSelected && selectionId == 1 && newAutoState is LocationZoneState.AutoZoneStatus.Ok) {
+                listener?.invoke(newAutoState.data, true)
+            }
         }
         getAutoIndex()?.let(::notifyItemChanged)
     }

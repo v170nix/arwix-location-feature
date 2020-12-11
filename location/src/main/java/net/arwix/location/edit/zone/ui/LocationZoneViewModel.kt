@@ -158,7 +158,7 @@ class LocationZoneViewModel(
     }
 
     suspend fun submit() {
-        super.onCleared()
         editUseCase.submit()
+        super.onCleared()
     }
 }
