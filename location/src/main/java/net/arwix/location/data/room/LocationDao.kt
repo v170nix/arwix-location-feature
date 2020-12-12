@@ -49,6 +49,7 @@ abstract class LocationDao {
                 )
             )
         } else {
+            val isSelected = getSelectedItem() == null
             insert(
                 LocationTimeZoneData(
                     id = null,
@@ -57,7 +58,8 @@ abstract class LocationDao {
                     latLng = LatLng(location.latitude, location.longitude),
                     altitude = location.altitude,
                     zone = zoneId,
-                    isAutoLocation = true
+                    isAutoLocation = true,
+                    isSelected = isSelected
                 )
             )
         }

@@ -66,8 +66,16 @@ class LocationCreateEditUseCase(
             tilt = location.cameraPosition?.tilt
         )
         initEditingFlow.replayCache.lastOrNull()?.let { editData ->
-            dao.update(data.copy(id = editData.id))
-        } ?: dao.insert(data)
+            dao.update(
+                data.copy(
+                    id = editData.id,
+                    isSelected = editData.isSelected
+                )
+            )
+        } ?: run {
+            val isSelected = dao.getSelectedItem() == null
+            dao.insert(data.copy(isSelected = isSelected))
+        }
     }
 
 }
