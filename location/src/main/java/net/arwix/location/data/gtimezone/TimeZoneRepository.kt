@@ -1,10 +1,5 @@
 package net.arwix.location.data.gtimezone
 
-//import org.threeten.bp.DateTimeUtils
-//import org.threeten.bp.Instant
-//import org.threeten.bp.ZoneId
-//import org.threeten.bp.ZonedDateTime
-//import org.threeten.bp.format.DateTimeFormatter
 import android.content.Context
 import android.icu.text.TimeZoneNames
 import android.os.Build
