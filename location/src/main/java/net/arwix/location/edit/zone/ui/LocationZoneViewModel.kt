@@ -70,10 +70,12 @@ class LocationZoneViewModel(
                     )
                 }
                 is LocationZoneAction.SelectZoneFromList -> {
-                    val currentData = state.value.selectedData ?: return@flow
+                    val currentLatLng =
+                        state.value.selectedData?.latLng ?: previousLatLng ?: return@flow
+//                    val e: EditZoneData = EditZoneData(action.zone, false, )
                     emit(
                         LocationZoneResult.SelectZone(
-                            EditZoneData(action.zone, false, currentData.latLng)
+                            EditZoneData(action.zone, false, currentLatLng)
                         )
                     )
                 }
