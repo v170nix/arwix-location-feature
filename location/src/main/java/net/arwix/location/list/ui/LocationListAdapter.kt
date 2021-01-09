@@ -65,6 +65,7 @@ class LocationListAdapter(
             }
             addAll(customData.map { Item.Manual(it) }.asReversed())
         }
+        if (data == items) return
         val diffCallback = ItemDiffCallback(items, data)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         items.clear()
