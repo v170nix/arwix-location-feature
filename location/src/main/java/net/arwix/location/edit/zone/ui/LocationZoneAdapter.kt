@@ -1,7 +1,5 @@
 package net.arwix.location.edit.zone.ui
 
-//import org.threeten.bp.Instant
-//import org.threeten.bp.ZoneId
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,8 +7,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.UiThread
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_location_zone.view.*
-import kotlinx.android.synthetic.main.item_location_zone_auto.view.*
 import kotlinx.coroutines.*
 import net.arwix.extension.gone
 import net.arwix.extension.invisible
@@ -173,9 +169,10 @@ class LocationZoneAdapter(
     private class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
     private class ManualViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        private val firstView: TextView = view.location_item_time_zone_first_text
-        private val secondaryView: TextView = view.location_item_time_zone_secondary_text
-        private val threeView: TextView = view.location_item_time_zone_three_text
+        private val firstView: TextView = view.findViewById(R.id.location_item_time_zone_first_text)
+        private val secondaryView: TextView =
+            view.findViewById(R.id.location_item_time_zone_secondary_text)
+        private val threeView: TextView = view.findViewById(R.id.location_item_time_zone_three_text)
 
         init {
             view.setBackgroundResource(R.drawable.location_selected_list_item)
@@ -189,12 +186,18 @@ class LocationZoneAdapter(
     }
 
     private class AutoViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        private val resultLayout: ViewGroup = view.location_time_zone_item_auto_layout
-        private val loadingProgressBar: ProgressBar = view.location_time_zone_item_auto_progress
-        private val resultFirstText: TextView = view.location_time_zone_item_auto_first_text
-        private val resultSecondaryText: TextView = view.location_time_zone_item_auto_secondary_text
-        private val resultThreeText: TextView = view.location_time_zone_item_auto_three_text
-        private val resultErrorText: TextView = view.location_time_zone_item_auto_error_text
+        private val resultLayout: ViewGroup =
+            view.findViewById(R.id.location_time_zone_item_auto_layout)
+        private val loadingProgressBar: ProgressBar =
+            view.findViewById(R.id.location_time_zone_item_auto_progress)
+        private val resultFirstText: TextView =
+            view.findViewById(R.id.location_time_zone_item_auto_first_text)
+        private val resultSecondaryText: TextView =
+            view.findViewById(R.id.location_time_zone_item_auto_secondary_text)
+        private val resultThreeText: TextView =
+            view.findViewById(R.id.location_time_zone_item_auto_three_text)
+        private val resultErrorText: TextView =
+            view.findViewById(R.id.location_time_zone_item_auto_error_text)
 
         var currentStatus: LocationZoneState.AutoZoneStatus? = null
         private val weakResultLayout: WeakReference<ViewGroup> = resultLayout.weak()
@@ -267,7 +270,9 @@ class LocationZoneAdapter(
             resultLayout.alpha = 0f
             resultLayout.invisible()
             val layoutParams = resultLayout.layoutParams
-            layoutParams.height = (resultLayout.resources.displayMetrics.density * 88).toInt()
+            layoutParams.height =
+                resultLayout.resources.getDimension(R.dimen.location_feature_zone_item_auto_height)
+                    .toInt()
             resultLayout.layoutParams = layoutParams
             resultErrorText.gone()
             resultFirstText.gone()
@@ -289,7 +294,9 @@ class LocationZoneAdapter(
             resultSecondaryText.gone()
             resultThreeText.gone()
             val layoutParams = resultLayout.layoutParams
-            layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+            layoutParams.height =
+                resultLayout.resources.getDimension(R.dimen.location_feature_zone_item_auto_height)
+                    .toInt()
             resultLayout.layoutParams = layoutParams
         }
 
