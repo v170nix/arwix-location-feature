@@ -103,7 +103,8 @@
             style="@style/LocationFeature.ActionButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:drawableLeft="@drawable/ic_location_feature_edit"
+            android:layout_marginEnd="8dp"
+            app:icon="@drawable/ic_location_feature_edit"
             app:layout_constraintEnd_toStartOf="@+id/location_main_item_delete_button"
             app:layout_constraintTop_toBottomOf="@+id/location_main_item_time_zone_three" />
 
@@ -112,7 +113,7 @@
             style="@style/LocationFeature.ActionButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:drawableLeft="@drawable/ic_location_feature_delete"
+            app:icon="@drawable/ic_location_feature_delete"
             app:layout_constraintDimensionRatio="w,1:1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/location_main_item_time_zone_three" />
