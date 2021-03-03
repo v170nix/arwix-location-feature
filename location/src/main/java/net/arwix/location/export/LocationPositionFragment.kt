@@ -78,7 +78,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
                 else -> return@registerForActivityResult
             }.getPlaceInResult() ?: return@registerForActivityResult
 
-            model.nextLatestAction(
+            model.onLatestAction(
                 LocationPositionAction.ChangeFromPlace(
                     place,
                     getCameraPosition(place.latLng)
@@ -204,7 +204,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         map.setOnMapClickListener { latLng ->
             lifecycleScope.launch {
                 googleMap?.run {
-                    model.nextLatestAction(
+                    model.onLatestAction(
                         LocationPositionAction.ChangeFromMap(
                             latLng,
                             this.cameraPosition
@@ -250,7 +250,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
         val lat = inputView.latitudeInputLayout.editText?.text.toString().toDoubleOrNull()
         val lng = inputView.longitudeInputLayout.editText?.text.toString().toDoubleOrNull()
         val latLng = if (lat != null && lng != null) LatLng(lat, lng) else null
-        model.nextLatestAction(
+        model.onLatestAction(
             LocationPositionAction.ChangeFromInput(
                 lat,
                 lng,

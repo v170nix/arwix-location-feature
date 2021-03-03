@@ -34,7 +34,7 @@ class LocationListViewModel(
                     if (index == 0) {
                         initState(list)
                     } else {
-                        nextResult(LocationListResult.LocationList(list))
+                        onResult(LocationListResult.LocationList(list))
                     }
                 }
         }
@@ -54,7 +54,7 @@ class LocationListViewModel(
                 LocationListResult.AutoItem.None(permission)
             }
         }
-        nextResult(
+        onResult(
             LocationListResult.Init(
                 permission,
                 customList,
@@ -69,7 +69,7 @@ class LocationListViewModel(
             yield()
             withContext(Dispatchers.Main) {
                 dao.updateAutoItem(address)
-                nextResult(
+                onResult(
                     LocationListResult.AutoLocation(
                         LocationListResult.AutoItem.Success(
                             location,
@@ -93,7 +93,7 @@ class LocationListViewModel(
             if (location != null) {
                 val zoneId = ZoneId.systemDefault()
                 dao.updateAutoItem(location, zoneId)
-                nextResult(
+                onResult(
                     LocationListResult.AutoLocation(
                         LocationListResult.AutoItem.Success(
                             location,
@@ -105,7 +105,7 @@ class LocationListViewModel(
                 val address = withContext(Dispatchers.IO) {
                     geocoderRepository.getAddressOrNull(location.latitude, location.longitude)
                 } ?: run {
-                    if (flagUpdate) nextResult(
+                    if (flagUpdate) onResult(
                         LocationListResult.AutoLocation(
                             LocationListResult.AutoItem.UpdateEnd(
                                 null
@@ -115,7 +115,7 @@ class LocationListViewModel(
                     return@launch
                 }
                 dao.updateAutoItem(address)
-                nextResult(
+                onResult(
                     LocationListResult.AutoLocation(
                         if (flagUpdate) LocationListResult.AutoItem.UpdateEnd(
                             location,
@@ -127,7 +127,7 @@ class LocationListViewModel(
                 )
 
             } else {
-                nextResult(
+                onResult(
                     LocationListResult.AutoLocation(
                         LocationListResult.AutoItem.None(
                             LocationPermissionHelper.check(applicationContext)

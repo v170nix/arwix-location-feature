@@ -37,8 +37,8 @@ open class LocationZoneFragment : Fragment() {
     fun setup(config: Config) {
         this.config = config
         adapter = LocationZoneAdapter(scope = lifecycleScope) { zoneId, isAuto ->
-            if (isAuto) model.nextMergeAction(LocationZoneAction.SelectZoneFormAuto(zoneId))
-            else model.nextMergeAction(LocationZoneAction.SelectZoneFromList(zoneId))
+            if (isAuto) model.onMergeAction(LocationZoneAction.SelectZoneFormAuto(zoneId))
+            else model.onMergeAction(LocationZoneAction.SelectZoneFromList(zoneId))
         }
     }
 

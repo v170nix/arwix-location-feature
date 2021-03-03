@@ -29,14 +29,14 @@ class LocationZoneViewModel(
     init {
         editUseCase.initEditingFlow.onEach {
             if (it == null) {
-                nextResult(LocationZoneResult.InitData(null))
+                onResult(LocationZoneResult.InitData(null))
             } else {
                 // edit
                 val latLng = editUseCase.editLocationFlow.value?.latLng
                 val data = EditZoneData.createFromLTZData(it).let { ezd ->
                     if (latLng != null) ezd.copy(latLng = latLng) else ezd
                 }
-                nextResult(LocationZoneResult.InitData(data))
+                onResult(LocationZoneResult.InitData(data))
                 updateAutoZone(data.latLng)
             }
 
@@ -46,7 +46,7 @@ class LocationZoneViewModel(
             if (it != null && it.latLng != previousLatLng) updateAutoZone(it.latLng)
             previousLatLng = it?.latLng
         }.launchIn(viewModelScope)
-        nextMergeAction(LocationZoneAction.LoadZoneList)
+        onMergeAction(LocationZoneAction.LoadZoneList)
     }
 
     override suspend fun dispatchAction(action: LocationZoneAction): Flow<LocationZoneResult> =
@@ -89,13 +89,13 @@ class LocationZoneViewModel(
             if (intState.autoZoneStatus is LocationZoneState.AutoZoneStatus.Ok &&
                 intState.autoZoneStatus.latLng == inLatLng
             ) return@launch
-            nextResult(LocationZoneResult.AutoZoneLoading(inLatLng))
+            onResult(LocationZoneResult.AutoZoneLoading(inLatLng))
             runCatching {
                 googleZoneRepository.getZoneId(inLatLng)
             }.onSuccess {
-                nextResult(LocationZoneResult.AutoZoneOk(inLatLng, it))
+                onResult(LocationZoneResult.AutoZoneOk(inLatLng, it))
             }.onFailure {
-                nextResult(LocationZoneResult.AutoZoneError(inLatLng, it))
+                onResult(LocationZoneResult.AutoZoneError(inLatLng, it))
             }
         }
     }

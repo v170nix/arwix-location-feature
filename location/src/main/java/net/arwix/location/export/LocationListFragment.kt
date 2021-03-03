@@ -41,14 +41,14 @@ abstract class LocationListFragment : Fragment() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                model.nextSyncAction(LocationListAction.GetAutoLocation)
+                model.onSyncAction(LocationListAction.GetAutoLocation)
             }
         }
 
     private val registerSettingLauncher =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                model.nextSyncAction(LocationListAction.UpdateAutoLocation)
+                model.onSyncAction(LocationListAction.UpdateAutoLocation)
             }
         }
 
@@ -70,16 +70,16 @@ abstract class LocationListFragment : Fragment() {
                     val intentSenderRequest = LocationSettingHelper.check(this@LocationListFragment)
                     if (intentSenderRequest == null) {
                         if (isRemoving || isDetached) return@launch
-                        model.nextSyncAction(LocationListAction.UpdateAutoLocation)
+                        model.onSyncAction(LocationListAction.UpdateAutoLocation)
                     } else registerSettingLauncher.launch(intentSenderRequest)
                 }
             },
             onSelectedListener = { item, isAuto ->
-                if (isAuto) model.nextLatestAction(LocationListAction.SelectFormAuto(item))
-                else model.nextLatestAction(LocationListAction.SelectFromCustomList(item))
+                if (isAuto) model.onLatestAction(LocationListAction.SelectFormAuto(item))
+                else model.onLatestAction(LocationListAction.SelectFromCustomList(item))
             },
             onEditListener = {
-                model.nextSyncAction(LocationListAction.EditItem(it))
+                model.onSyncAction(LocationListAction.EditItem(it))
                 navigateToEditItemFragment()
             },
             onDeleteListener = { item ->
@@ -91,10 +91,10 @@ abstract class LocationListFragment : Fragment() {
                     )
                     .setAnchorView(getContextUndoDeleteView())
                     .setAction(R.string.location_undo_delete_button) {
-                        model.nextSyncAction(LocationListAction.UndoDeleteItem(item))
+                        model.onSyncAction(LocationListAction.UndoDeleteItem(item))
                     }
                     .show()
-                model.nextSyncAction(LocationListAction.DeleteItem(item))
+                model.onSyncAction(LocationListAction.DeleteItem(item))
             }
         )
     }

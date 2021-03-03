@@ -28,8 +28,8 @@ class LocationPositionViewModel(
 
     init {
         editUseCase.initEditingFlow.onEach {
-            if (it == null) nextResult(LocationPositionResult.InitData(null))
-            else nextResult(
+            if (it == null) onResult(LocationPositionResult.InitData(null))
+            else onResult(
                 LocationPositionResult.InitData(
                     EditLocationData.createFromLTZData(
                         it
@@ -86,14 +86,14 @@ class LocationPositionViewModel(
             val address = geocoderRepository.getAddressOrNull(latLng.latitude, latLng.longitude)
             yield()
             if (address != null) {
-                nextResult(
+                onResult(
                     LocationPositionResult.SuccessGeocoder(
                         address,
                         latLng,
                         cameraPosition
                     )
                 )
-            } else nextResult(LocationPositionResult.ErrorGeocoder(latLng, cameraPosition))
+            } else onResult(LocationPositionResult.ErrorGeocoder(latLng, cameraPosition))
 
         }
     }
