@@ -1,16 +1,17 @@
 package net.arwix.location.data.gtimezone
 
 import android.os.Build
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.time.ZoneId
 
 //import org.threeten.bp.ZoneId
-
+@Serializable
 data class TimeZoneGoogleData(
     val dstOffset: Long,
     val rawOffset: Long,
-    @SerializedName("timeZoneId") val id: String,
-    @SerializedName("timeZoneName") val name: String,
+    @SerialName("timeZoneId") val id: String,
+    @SerialName("timeZoneName") val name: String,
     val status: String
 ) {
     fun toZoneId(): ZoneId? = runCatching {
