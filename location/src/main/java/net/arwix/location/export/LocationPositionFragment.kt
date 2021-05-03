@@ -268,7 +268,7 @@ abstract class LocationPositionFragment : Fragment(), OnMapReadyCallback {
 
     private fun getCameraPosition(latLng: LatLng?) = runCatching {
         googleMap?.run {
-            cameraPosition?.run {
+            cameraPosition.run {
                 CameraPosition
                     .builder(this)
                     .apply { latLng?.run(::target) }
