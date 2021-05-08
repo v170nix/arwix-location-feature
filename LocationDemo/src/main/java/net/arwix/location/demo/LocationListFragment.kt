@@ -7,7 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_location_list.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -36,12 +38,23 @@ class LocationListFragment : LocationListFragment() {
         return inflater.inflate(R.layout.fragment_location_list, container, false)
     }
 
+    class MyItemAnimator : DefaultItemAnimator() {
+
+        override fun canReuseUpdatedViewHolder(
+            viewHolder: RecyclerView.ViewHolder,
+            payloads: MutableList<Any>
+        ): Boolean {
+            return true
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(location_main_list) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = this@LocationListFragment.getAdapter()
+            this.itemAnimator = MyItemAnimator()
         }
         location_add_button.setOnClickListener {
             doAddLocation()

@@ -97,7 +97,7 @@ class LocationZoneAdapter(
         val item = items[position]
         if (item is Item.Manual) with(holder as ManualViewHolder) {
             setData(item.entry)
-            view.isActivated = selectionId == position
+            view.isSelected = selectionId == position
             view.tag = item
             view.setOnClickListener(onClickListener)
         }
@@ -107,7 +107,7 @@ class LocationZoneAdapter(
             scope.launch {
                 autoState?.run {
                     this@holder.doResult(this)
-                    this@holder.view.isActivated = selectionId == position
+                    this@holder.view.isSelected = selectionId == position
                 }
             }
         }
@@ -216,11 +216,11 @@ class LocationZoneAdapter(
             }
 
         fun deselect() {
-            view.isActivated = false
+            view.isSelected = false
         }
 
         fun select() {
-            view.isActivated = true
+            view.isSelected = true
         }
 
         private suspend fun consumeAction(status: LocationZoneState.AutoZoneStatus) {

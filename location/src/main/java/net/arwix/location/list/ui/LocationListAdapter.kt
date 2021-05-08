@@ -31,8 +31,6 @@ class LocationListAdapter(
     private val onDeleteListener: ((item: LocationTimeZoneData) -> Unit)? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-//    private val items = mutableListOf<Item>()
-
     private val differ = AsyncListDiffer(this, diffCallback)
 
     init {
@@ -228,7 +226,7 @@ class LocationListAdapter(
         }
 
         override fun selected() {
-            layout.isActivated = true
+            layout.isSelected = true
             headerView.setTextColor(onSecondaryColor)
             nameView.setTextColor(onSecondaryColor)
             subNameView.setTextColor(onSecondaryColor)
@@ -241,7 +239,7 @@ class LocationListAdapter(
         }
 
         override fun deselected() {
-            layout.isActivated = false
+            layout.isSelected = false
             headerView.setTextColor(headerTextColors)
             nameView.setTextColor(defaultTextColors)
             subNameView.setTextColor(defaultTextColors)
@@ -363,7 +361,7 @@ class LocationListAdapter(
         }
 
         override fun selected() {
-            layout.isActivated = true
+            layout.isSelected = true
             nameView.setTextColor(onSecondaryColor)
             subNameView.setTextColor(onSecondaryColor)
             latitudeView.setTextColor(onSecondaryColor)
@@ -375,7 +373,7 @@ class LocationListAdapter(
         }
 
         override fun deselected() {
-            layout.isActivated = false
+            layout.isSelected = false
             nameView.setTextColor(defaultTextColors)
             subNameView.setTextColor(defaultTextColors)
             latitudeView.setTextColor(defaultTextColors)
