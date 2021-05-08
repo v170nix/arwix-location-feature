@@ -1,5 +1,6 @@
 package net.arwix.location.list.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.annotation.UiThread
 import androidx.lifecycle.viewModelScope
@@ -19,12 +20,14 @@ import java.time.ZoneId
 //import org.threeten.bp.ZoneId
 
 class LocationListViewModel(
-    private val applicationContext: Context,
+    context: Context,
     private val dao: LocationDao,
     private val editUseCase: LocationCreateEditUseCase,
     private val geocoderRepository: GeocoderRepository
 ) : FlowViewModel<LocationListAction, LocationListResult, LocationListState>(LocationListState()) {
 
+    @SuppressLint("StaticFieldLeak")
+    private val applicationContext: Context = context.applicationContext
     private val updateLocationJobs = mutableListOf<Job>()
 
     init {

@@ -1,5 +1,6 @@
 package net.arwix.location.list.ui
 
+//import org.threeten.bp.Instant
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,6 +8,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import net.arwix.extension.gone
@@ -16,7 +18,6 @@ import net.arwix.location.common.extension.latToString
 import net.arwix.location.common.extension.lngToString
 import net.arwix.location.data.gtimezone.TimeZoneRepository
 import net.arwix.location.data.room.LocationTimeZoneData
-//import org.threeten.bp.Instant
 import java.time.Instant
 
 class LocationListAdapter(
@@ -30,7 +31,15 @@ class LocationListAdapter(
     private val onDeleteListener: ((item: LocationTimeZoneData) -> Unit)? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val items = mutableListOf<Item>()
+//    private val items = mutableListOf<Item>()
+
+    private val differ = AsyncListDiffer(this, diffCallback)
+
+    init {
+        AsyncListDiffer(this, diffCallback)
+        // fix detached view should be removed from RecyclerView before it can be recycled
+        setHasStableIds(false)
+    }
 
     private val onEditClickListener = View.OnClickListener { v ->
         val item = v.tag as Item.Manual
@@ -65,12 +74,14 @@ class LocationListAdapter(
             }
             addAll(customData.map { Item.Manual(it) }.asReversed())
         }
-        if (data == items) return
-        val diffCallback = ItemDiffCallback(items, data)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        items.clear()
-        items.addAll(data)
-        diffResult.dispatchUpdatesTo(this)
+        if (data == differ.currentList) return
+        differ.submitList(data)
+//        if (data == items) return
+//        val diffCallback = ItemDiffCallback(items, data)
+//        val diffResult = DiffUtil.calculateDiff(diffCallback)
+//        items.clear()
+//        items.addAll(data)
+//        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(
@@ -96,7 +107,7 @@ class LocationListAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val item = items[position]
+        val item = differ.currentList[position]  // items[position]
         if (item is Item.Manual) {
             holder as CustomLocationViewHolder
             with(holder) {
@@ -119,9 +130,10 @@ class LocationListAdapter(
         }
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount() = differ.currentList.size // items.size
 
-    override fun getItemViewType(position: Int) = items[position].viewType
+    override fun getItemViewType(position: Int) =
+        differ.currentList[position].viewType // items[position].viewType
 
     interface Select {
         fun selected()
@@ -375,40 +387,39 @@ class LocationListAdapter(
         }
     }
 
-    private class ItemDiffCallback(
-        private val oldList: List<Item>,
-        private val newList: List<Item>
-    ) : DiffUtil.Callback() {
+    private companion object {
+        private val diffCallback by lazy(LazyThreadSafetyMode.NONE) {
+            object : DiffUtil.ItemCallback<Item>() {
 
-        override fun getOldListSize() = oldList.size
+                override fun areItemsTheSame(
+                    oldItem: Item,
+                    newItem: Item
+                ): Boolean {
+                    return ((oldItem is Item.Auto && newItem is Item.Auto) ||
+                            ((oldItem is Item.Manual && newItem is Item.Manual) &&
+                                    oldItem.data.id == newItem.data.id))
+                }
 
-        override fun getNewListSize() = newList.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val oldItem = oldList[oldItemPosition]
-            val newItem = newList[newItemPosition]
-            return ((oldItem is Item.Auto && newItem is Item.Auto) ||
-                    ((oldItem is Item.Manual && newItem is Item.Manual) &&
-                            oldItem.data.id == newItem.data.id))
-        }
-
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val oldItem = oldList[oldItemPosition]
-            val newItem = newList[newItemPosition]
-            if (oldItem is Item.Auto && newItem is Item.Auto) {
-                return (oldItem.state == newItem.state)
+                override fun areContentsTheSame(
+                    oldItem: Item,
+                    newItem: Item
+                ): Boolean {
+                    if (oldItem is Item.Auto && newItem is Item.Auto) {
+                        return (oldItem.state == newItem.state)
+                    }
+                    if (oldItem is Item.Auto || newItem is Item.Auto) return false
+                    oldItem as Item.Manual
+                    newItem as Item.Manual
+                    return (
+                            oldItem.data.zone.id == newItem.data.zone.id
+                                    && oldItem.data.latLng == newItem.data.latLng
+                                    && oldItem.data.name == newItem.data.name
+                                    && oldItem.data.subName == newItem.data.subName
+                                    && oldItem.data.isSelected == newItem.data.isSelected
+                            )
+                }
             }
-            if (oldItem is Item.Auto || newItem is Item.Auto) return false
-            oldItem as Item.Manual
-            newItem as Item.Manual
-            return (oldItem.data.zone.id == newItem.data.zone.id &&
-                    oldItem.data.latLng == newItem.data.latLng &&
-                    oldItem.data.name == newItem.data.name &&
-                    oldItem.data.subName == newItem.data.subName &&
-                    oldItem.data.isSelected == newItem.data.isSelected)
         }
-
     }
 
     sealed class AutoState {
